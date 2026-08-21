@@ -1,14 +1,18 @@
 const express = require("express");
+const path = require("path"); // Necessário para caminhos de pastas
 const server = express();
 
 // Configurações do EJS
 server.set("view engine", "ejs");
-// server.set('views', './views'); // (opcional, dependendo da sua estrutura)
+server.set('views', path.join(__dirname, 'views')); 
 
-// 1. IMPORTANTE: Importar o arquivo de rotas que você criou
+// ESSENCIAL: Permite que o EJS encontre o style.css, script.js e imagens
+server.use(express.static(path.join(__dirname, 'public')));
+
+// Importar o arquivo de rotas
 const hortifrutirouter = require("./routes/hortifrutirouter");
 
-// 2. Chamada das nossas rotas que estão no arquivo hortifrutirouter.ejs
+// Chamada das rotas
 server.use("/", hortifrutirouter);
 
 // Iniciando o servidor

@@ -1,11 +1,581 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenGo - Suas Verduras Frescas</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenGo - Frescor da Feira</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
+<!-- Cabeçalho  -->
+<header class="topo">
+  <div class="logo">
+    <img src="img/logo-greengo.jpg" alt="Greengo" style="height: 50px; cursor: pointer;">
+    <span class="logo-texto">Greengo</span>
+  </div>
+
+  <!-- Menu de navegação  -->
+  <nav class="menu-links">
+    <a href="#inicio">Início</a>
+    <a href="#ofertas">Ofertas</a>
+    <a href="#produtos">Produtos</a>
+    <a href="#sobre">Sobre</a>
+    <a href="#" id="btn-conta">Minha Conta</a>
+  </nav>
+
+  <div class="icons">
+    <!-- Campo de Pesquisa -->
+    <div class="search-container">
+      <input 
+        type="text" 
+        id="search-input" 
+        placeholder="Buscar produtos..." 
+        aria-label="Buscar produtos"
+        autocomplete="off"
+      >
+      <button id="search-btn" aria-label="Pesquisar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </div>
     
+    <div class="cart-icon" role="button" aria-label="Carrinho de compras" tabindex="0">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span class="cart-counter" id="cart-counter">0</span>
+    </div>
+  </div>
+</header>
+
+<!-- Banner Simples -->
+<section id="inicio" class="banner">
+  <div class="banner-texto">
+    <h1 class="hero-title">
+      <span class="hero-line-1">Frescor da Feira,</span>
+      <span class="hero-line-2">na Sua Casa</span>
+    </h1>
+    <p class="hero-subtitle">Produtos frescos e saudáveis direto para sua porta</p>
+    <button class="cta-button" onclick="scrollToProducts()">
+      Ver Produtos
+      <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+</section>
+
+<!-- Seção de Ofertas -->
+<section id="ofertas" class="ofertas container my-5">
+  <div class="text-center mb-4">
+    <h2 class="text-success">Nossas Ofertas</h2>
+    <p class="ofertas-subtitulo">Ofertas selecionadas para deixar sua compra mais prática e econômica.</p>
+  </div>
+
+  <div id="carouselOfertas" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#carouselOfertas" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Oferta 1"></button>
+      <button type="button" data-bs-target="#carouselOfertas" data-bs-slide-to="1" aria-label="Oferta 2"></button>
+      <button type="button" data-bs-target="#carouselOfertas" data-bs-slide-to="2" aria-label="Oferta 3"></button>
+    </div>
+
+    <div class="carousel-inner rounded-3 shadow-sm">
+      <div class="carousel-item active">
+        <div class="oferta-slide">
+          <img src="imagens-produtos/imagens/promo-banana.png" class="d-block w-100 oferta-carousel-img object-fit-fill" alt="Promo Banana">
+        </div>
+      </div>
+
+      <div class="carousel-item">
+        <div class="oferta-slide">
+          <img src="imagens-produtos/imagens/promo-alface.png" class="d-block w-100 oferta-carousel-img object-fit-fill" alt="Promo Alface">
+        </div>
+      </div>
+
+      <div class="carousel-item">
+        <div class="oferta-slide">
+          <img src="imagens-produtos/imagens/promo-tomate.png" class="d-block w-100 oferta-carousel-img object-fit-fill" alt="Promo Tomate">
+        </div>
+      </div>
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselOfertas" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselOfertas" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Próximo</span>
+    </button>
+  </div>
+</section><hr>
+
+<!-- Produtos  -->
+<section id="produtos" class="produtos">
+  <h2>Nossos Produtos</h2>
+  
+  <!-- Filtros de Categoria -->
+  <div class="filtros-categoria">
+    <button class="filtro-btn active" data-categoria="todos" onclick="filtrarPorCategoria('todos')">
+      <i class="fas fa-th"></i> Todos
+    </button>
+    <button class="filtro-btn" data-categoria="frutas" onclick="filtrarPorCategoria('frutas')">
+      <i class="fas fa-apple-alt"></i> Frutas
+    </button>
+    <button class="filtro-btn" data-categoria="legumes" onclick="filtrarPorCategoria('legumes')">
+      <i class="fas fa-carrot"></i> Legumes
+    </button>
+    <button class="filtro-btn" data-categoria="verduras" onclick="filtrarPorCategoria('verduras')">
+      <i class="fas fa-leaf"></i> Verduras
+    </button>
+  </div>
+
+  <div class="grid" id="produtos-grid">
+    <!-- FRUTAS -->
+    <div class="produto" data-name="Banana" data-categoria="frutas" data-preco="4.99" data-descricao="Bananas doces e maduras, perfeitas para vitaminas e lanches." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/banana.jpg" alt="Banana">
+      <h3>Banana</h3>
+      <p>R$ 3,99/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Banana', '4.99')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Laranja" data-categoria="frutas" data-preco="5.20" data-descricao="Laranjas suculentas e perfeitas para sucos frescos." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/laranja.jpg" alt="Laranja">
+      <h3>Laranja</h3>
+      <p>R$ 5,20/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Laranja', '5.20')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Maçã Gala" data-categoria="frutas" data-preco="5.99" data-descricao="Maçã Gala crocante e adocicada, ótima para saladas e sobremesas." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/maçã.jpg" alt="Maçã Gala">
+      <h3>Maçã Gala</h3>
+      <p>R$ 5,99/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Maçã Gala', '5.99')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Melancia" data-categoria="frutas" data-preco="8.90" data-descricao="Melancia fresca e doce, ótima para dias quentes." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/melancia.jpg" alt="Melancia">
+      <h3>Melancia</h3>
+      <p>R$ 8,90/un</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Melancia', '8.90')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Morango" data-categoria="frutas" data-preco="10.22" data-descricao="Morangos vermelhos e aromáticos, saborosos e frescos." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/morango.jpg" alt="Morango">
+      <h3>Morango</h3>
+      <p>R$ 10,22/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Morango', '10.22')">Adicionar</button>
+    </div>
+
+    <!-- LEGUMES -->
+    <div class="produto" data-name="Abóbora" data-categoria="legumes" data-preco="4.80" data-descricao="Abóbora macia e nutritiva, ótima para sopas e refogados." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/abobora.jpg" alt="Abóbora">
+      <h3>Abóbora</h3>
+      <p>R$ 4,80/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Abóbora', '4.80')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Batata" data-categoria="legumes" data-preco="3.50" data-descricao="Batatas firmes e versáteis, ideais para assar, fritar ou cozinhar." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/batatas.jpg" alt="Batata">
+      <h3>Batata</h3>
+      <p>R$ 3,50/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Batata', '3.50')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Cenoura" data-categoria="legumes" data-preco="4.50" data-descricao="Cenouras crocantes e doces, ricas em vitamina A." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/cenoura.jpg" alt="Cenoura">
+      <h3>Cenoura</h3>
+      <p>R$ 4,50/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Cenoura', '4.50')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Repolho" data-categoria="legumes" data-preco="3.20" data-descricao="Repolho fresco para saladas, refogados e pratos saudáveis." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/repolho.jpg" alt="Repolho">
+      <h3>Repolho</h3>
+      <p>R$ 3,20/un</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Repolho', '3.20')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Tomate" data-categoria="legumes" data-preco="6.99" data-descricao="Tomates maduros e suculentos, perfeitos para salada e molho." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/tomates.jpg" alt="Tomate">
+      <h3>Tomate</h3>
+      <p>R$ 4,99/kg</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Tomate', '6.99')">Adicionar</button>
+    </div>
+
+    <!-- VERDURAS  -->
+    <div class="produto" data-name="Acelga" data-categoria="verduras" data-preco="3.50" data-descricao="Acelga fresca com talos crocantes, fonte de fibras." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/acelga.jpg" alt="Acelga">
+      <h3>Acelga</h3>
+      <p>R$ 3,50/maço</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Acelga', '3.50')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Alface Crespa" data-categoria="verduras" data-preco="3.99" data-descricao="Alface crocante para sanduíches e saladas frescas." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/alface.jpg" alt="Alface Crespa">
+      <h3>Alface Crespa</h3>
+      <p>R$ 1,79/un</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Alface Crespa', '3.99')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Couve" data-categoria="verduras" data-preco="2.99" data-descricao="Couve verde para sucos, refogados e acompanhamentos." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/couve.jpg" alt="Couve">
+      <h3>Couve</h3>
+      <p>R$ 2,99/maço</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Couve', '2.99')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Espinafre" data-categoria="verduras" data-preco="4.20" data-descricao="Espinafre fresco e saudável, rico em ferro." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/espinafre.jpg" alt="Espinafre">
+      <h3>Espinafre</h3>
+      <p>R$ 4,20/maço</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Espinafre', '4.20')">Adicionar</button>
+    </div>
+    <div class="produto" data-name="Rúcula" data-categoria="verduras" data-preco="3.80" data-descricao="Rúcula picante para dar sabor extra às suas receitas." onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/rucula.jpg" alt="Rúcula">
+      <h3>Rúcula</h3>
+      <p>R$ 3,80/maço</p>
+      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Rúcula', '3.80')">Adicionar</button>
+    </div>
+  </div>
+  <div id="no-results" class="no-results" style="display: none;">
+    <p>Nenhum produto encontrado para sua busca.</p>
+  </div>
+</section> <hr>
+
+<!-- Sobre -->
+<section id="sobre" class="sobre">
+  <h2>Sobre a Greengo</h2>
+  <div class="sobre-content">
+    <p>A Greengo é uma empresa dedicada a trazer produtos frescos e saudáveis diretamente da feira para sua casa.</p>
+    <p>Nosso compromisso é com a qualidade, frescor e sustentabilidade.</p>
+    
+    <div class="valores-container">
+      <div class="valor-card">
+        <h3><i class="fas fa-bullseye"></i> Missão</h3>
+        <p>Proporcionar acesso fácil e conveniente a produtos frescos e saudáveis, conectando produtores locais aos consumidores, promovendo uma alimentação de qualidade e sustentável.</p>
+      </div>
+      
+      <div class="valor-card">
+        <h3><i class="fas fa-eye"></i> Visão</h3>
+        <p>Ser referência nacional em distribuição de produtos frescos, reconhecida pela excelência no atendimento, qualidade dos produtos e compromisso com a sustentabilidade.</p>
+      </div>
+      
+      <div class="valor-card">
+        <h3><i class="fas fa-heart"></i> Valores</h3>
+        <ul>
+          <li><strong>Qualidade:</strong> Produtos selecionados com rigor</li>
+          <li><strong>Sustentabilidade:</strong> Respeito ao meio ambiente</li>
+          <li><strong>Transparência:</strong> Honestidade em todas as relações</li>
+          <li><strong>Compromisso:</strong> Dedicação aos nossos clientes</li>
+          <li><strong>Inovação:</strong> Sempre buscando melhorias</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="conceitos">
+      <h3>Por que escolher a Greengo?</h3>
+      <ul>
+        <li>Produtos frescos diariamente</li>
+        <li>Entrega rápida e segura</li>
+        <li>Preços justos e acessíveis</li>
+        <li>Compromisso com sustentabilidade</li>
+        <li>Atendimento personalizado</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Bootstrap: Carrinho / Delivery -->
+<div class="modal fade" id="modalCarrinho" tabindex="-1" aria-labelledby="modalCarrinhoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalCarrinhoLabel">Carrinho e Entrega</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <h6 class="fw-bold text-success">Itens escolhidos</h6>
+        <div id="itens-carrinho" class="mb-3">
+          <p class="text-muted">Carrinho vazio.</p>
+        </div>
+
+        <div class="alert alert-success d-flex justify-content-between align-items-center">
+          <strong>Total:</strong>
+          <strong>R$ <span id="total-carrinho">0,00</span></strong>
+        </div>
+
+        <form id="formCompra" novalidate>
+          <h6 class="fw-bold text-success mt-4">Dados para entrega</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="compraNome" class="form-label">Nome completo</label>
+              <input type="text" class="form-control" id="compraNome" required minlength="3">
+              <div class="invalid-feedback">Informe seu nome.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="compraTelefone" class="form-label">Telefone</label>
+              <input type="text" class="form-control" id="compraTelefone" maxlength="15" placeholder="(18) 99999-9999" required>
+              <div class="invalid-feedback">Informe o telefone.</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label for="compraCep" class="form-label">CEP</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="compraCep" maxlength="9" placeholder="00000-000" required>
+                <button class="btn btn-outline-secondary" type="button" id="btnBuscaCep">Buscar CEP</button>
+              </div>
+              <div class="invalid-feedback">Informe o CEP.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="compraRua" class="form-label">Rua</label>
+              <input type="text" class="form-control" id="compraRua" required>
+              <div class="invalid-feedback">Informe a rua.</div>
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="compraNumero" class="form-label">Número</label>
+              <input type="text" class="form-control" id="compraNumero" required>
+              <div class="invalid-feedback">Informe o número.</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-5 mb-3">
+              <label for="compraBairro" class="form-label">Bairro</label>
+              <input type="text" class="form-control" id="compraBairro" required>
+              <div class="invalid-feedback">Informe o bairro.</div>
+            </div>
+            <div class="col-md-5 mb-3">
+              <label for="compraCidade" class="form-label">Cidade</label>
+              <input type="text" class="form-control" id="compraCidade" required>
+              <div class="invalid-feedback">Informe a cidade.</div>
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="compraUf" class="form-label">UF</label>
+              <input type="text" class="form-control" id="compraUf" maxlength="2" placeholder="SP" required>
+              <div class="invalid-feedback">UF.</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="compraObs" class="form-label">Observação</label>
+            <textarea class="form-control" id="compraObs" rows="2" placeholder="Ex: retirar sementes, entregar no portão..."></textarea>
+          </div>
+
+          <h6 class="fw-bold text-success mt-4">Forma de pagamento</h6>
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="form-check border rounded p-3">
+                <input class="form-check-input ms-0 me-2" type="radio" name="pagamento" id="pagPix" value="Pix" checked>
+                <label class="form-check-label" for="pagPix">Pix</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check border rounded p-3">
+                <input class="form-check-input ms-0 me-2" type="radio" name="pagamento" id="pagDinheiro" value="Dinheiro">
+                <label class="form-check-label" for="pagDinheiro">Dinheiro</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check border rounded p-3">
+                <input class="form-check-input ms-0 me-2" type="radio" name="pagamento" id="pagCartao" value="Cartão">
+                <label class="form-check-label" for="pagCartao">Cartão</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="areaCartao" class="border rounded p-3 mb-3 bg-light" style="display:none;">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="numeroCartao" class="form-label">Número do cartão</label>
+                <input type="text" class="form-control" id="numeroCartao" maxlength="19" placeholder="0000 0000 0000 0000">
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="validadeCartao" class="form-label">Validade</label>
+                <input type="text" class="form-control" id="validadeCartao" maxlength="5" placeholder="MM/AA">
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="cvvCartao" class="form-label">CVV</label>
+                <input type="text" class="form-control" id="cvvCartao" maxlength="3" placeholder="123">
+              </div>
+            </div>
+            <small class="text-muted">Exemplo visual para o trabalho, sem cobrança real.</small>
+          </div>
+
+          <div id="areaPix" class="alert alert-info py-2">Chave Pix exemplo: contato@greengo.com.br</div>
+          <div id="areaDinheiro" class="alert alert-warning py-2" style="display:none;">Pagamento em dinheiro será combinado na entrega.</div>
+
+          <button type="submit" class="btn btn-success w-100 mt-2">
+            Finalizar pedido pelo WhatsApp
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Bootstrap: Produto Detalhe -->
+<div class="modal fade" id="modalProduto" tabindex="-1" aria-labelledby="modalProdutoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalProdutoLabel">Detalhe do Produto</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-5 text-center">
+            <img id="produtoDetalheImagem" src="" alt="" class="img-fluid rounded produto-detail-image mb-3">
+          </div>
+          <div class="col-md-7">
+            <h5 id="produtoDetalheNome" class="text-success"></h5>
+            <p id="produtoDetalheDescricao" class="text-muted mb-3"></p>
+            <p class="fs-4 fw-bold text-dark">R$ <span id="produtoDetalhePreco">0,00</span></p>
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <label for="produtoDetalheQuantidade" class="mb-0">Quantidade</label>
+              <input id="produtoDetalheQuantidade" type="number" min="1" value="1" class="form-control w-25">
+            </div>
+            <button type="button" id="produtoDetalheAdicionar" class="btn btn-success w-100">Adicionar ao carrinho</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Bootstrap: Login / Criar Conta -->
+<div class="modal fade" id="modalConta" tabindex="-1" aria-labelledby="modalContaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalContaLabel">Área do Cliente</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <ul class="nav nav-tabs mb-3" id="abasConta" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="aba-entrar" data-bs-toggle="tab" data-bs-target="#entrar" type="button" role="tab">Entrar</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="aba-criar" data-bs-toggle="tab" data-bs-target="#criar" type="button" role="tab">Criar Conta</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="entrar" role="tabpanel">
+            <button type="button" class="btn btn-outline-dark w-100 mb-3" onclick="mostrarMensagemConta('Exemplo de botão Google. Sem integração real.')">
+              <i class="fa-brands fa-google me-2"></i> Entrar com Google
+            </button>
+
+            <form id="formLogin" novalidate>
+              <div class="mb-3">
+                <label for="loginEmail" class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="loginEmail" placeholder="seuemail@exemplo.com" required>
+                <div class="invalid-feedback">Informe um e-mail válido.</div>
+              </div>
+              <div class="mb-3">
+                <label for="loginSenha" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="loginSenha" required minlength="4">
+                <div class="invalid-feedback">Informe sua senha.</div>
+              </div>
+              <button type="submit" class="btn btn-success w-100">Entrar</button>
+            </form>
+          </div>
+
+          <div class="tab-pane fade" id="criar" role="tabpanel">
+            <form id="formCriarConta" novalidate>
+              <div class="mb-3">
+                <label for="cadNome" class="form-label">Nome completo</label>
+                <input type="text" class="form-control" id="cadNome" required minlength="3">
+                <div class="invalid-feedback">Digite nome completo sem números.</div>
+              </div>
+              <div class="mb-3">
+                <label for="cadCpf" class="form-label">CPF</label>
+                <input type="text" class="form-control" id="cadCpf" maxlength="14" placeholder="000.000.000-00" required onkeyup="mascara('###.###.###-##',this,event)">
+                <div class="invalid-feedback">Informe um CPF válido.</div>
+              </div>
+              <div class="mb-3">
+                <label for="cadTelefone" class="form-label">Telefone</label>
+                <input type="text" class="form-control" id="cadTelefone" maxlength="15" placeholder="(18) 99999-9999" required onkeyup="mascara('(##) #####-####',this,event)">
+                <div class="invalid-feedback">Informe o telefone completo.</div>
+              </div>
+              <div class="mb-3">
+                <label for="cadEmail" class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="cadEmail" required>
+                <div class="invalid-feedback">Informe um e-mail válido.</div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="cadSenha" class="form-label">Senha</label>
+                  <input type="password" class="form-control" id="cadSenha" required minlength="6">
+                  <div class="invalid-feedback">Mínimo de 6 caracteres.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="cadConfirmaSenha" class="form-label">Confirmar senha</label>
+                  <input type="password" class="form-control" id="cadConfirmaSenha" required>
+                  <div class="invalid-feedback">As senhas precisam ser iguais.</div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+              
+            </form>
+          </div>
+        </div>
+
+        <div id="mensagemConta" class="alert alert-success mt-3 d-none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SEÇÃO DICAS COMENTADA PARA AJUSTE POSTERIOR
+<section id="dicas" class="container my-5">
+  <div class="text-center mb-4">
+    <h2 class="text-success">Dicas GreenGo</h2>
+    <p>Espaço reservado para dicas de conservação, higienização e melhor aproveitamento dos alimentos.</p>
+    <a href="cartilha.html" class="btn btn-success">Ver dicas</a>
+  </div>
+</section>
+-->
+
+<!-- Rodapé -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h3>Green Go S/A</h3>
+      <p>Hortifruti digital com produtos frescos, atendimento prático e compra facilitada.</p>
+      <p>CNPJ nº 00.776.574/1975-10</p>
+    </div>
+
+    <div class="footer-section">
+      <h3>Nossos Canais de Atendimento</h3>
+      <p><i class="fas fa-envelope"></i> contato@greengo.com.br</p>
+      <p><i class="fas fa-phone"></i> (18) 99999-9999</p>
+      <p><i class="fas fa-clock"></i> Segunda a Sexta: 8h às 18h</p>
+    </div>
+
+    <div class="footer-section footer-map">
+      <h3>Localização</h3>
+      <p><i class="fas fa-map-location-dot"></i> Rua das Frutas, 123 - Presidente Prudente
+      CEP 00000-023.</p>
+      <iframe title="Mapa Unoeste Campus 1" src="https://www.google.com/maps?q=Unoeste%20Campus%201%20Presidente%20Prudente&output=embed" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p class="mb-2">&copy; 2025 Green Go S/A. Todos os direitos reservados.</p>
+    <div class="footer-links-greengo">
+      <a href="gestao-produtos.html">Gestão</a>
+      <a href="cartilhas.html">Cartilhas</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ÍCONE DE LIBRAS -->
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="validacoes.js"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
