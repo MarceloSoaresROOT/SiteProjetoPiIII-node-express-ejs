@@ -2027,3 +2027,25 @@ footer {
 .atalhos-cadastros-gestao .card-resumo-gestao:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
 }
+.banner {
+  /* Define a cor verde escura de fundo (caso a imagem demore a carregar) */
+  background-color: #0e441c; 
+  
+  /* Coloca a imagem de fundo. Substitua o caminho abaixo pelo local correto da sua imagem */
+  background-image: url('imagens-produtos/imagens/img-site/fundo-frutas-verduras.png');
+  
+  /* Faz a imagem cobrir todo o espaço do banner sem distorcer */
+  background-size: cover;
+  
+  /* Posiciona a imagem para que os vegetais fiquem alinhados à direita */
+  background-position: center right; 
+  
+  /* Impede que a imagem se repita */
+  background-repeat: no-repeat;
+  
+  /* Espaçamento interno para dar altura ao banner e desgrudar o texto das bordas */
+  padding: 120px 50px; 
+  
+  /* Deixa o texto interno branco para dar contraste com o fundo escuro */
+  color: #ffffff;
+}
