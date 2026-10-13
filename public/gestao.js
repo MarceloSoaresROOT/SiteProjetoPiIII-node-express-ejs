@@ -1,15 +1,41 @@
 // Gestão de Produtos - vetor, DOM, checkbox, exclusão e adição com modal Bootstrap
 
-var produtos = [
-  { id: 1, nome: 'Banana Prata', categoria: 'Frutas', preco: 'R$ 4,99', estoque: 30, fornecedor: 'Sítio Boa Terra' },
-  { id: 2, nome: 'Maçã Gala', categoria: 'Frutas', preco: 'R$ 5,99', estoque: 25, fornecedor: 'Fazenda Verde' },
-  { id: 3, nome: 'Morango', categoria: 'Frutas', preco: 'R$ 10,22', estoque: 18, fornecedor: 'Horta Moranguinho' },
-  { id: 4, nome: 'Tomate', categoria: 'Legumes', preco: 'R$ 6,99', estoque: 40, fornecedor: 'Agro Prudente' },
-  { id: 5, nome: 'Cenoura', categoria: 'Legumes', preco: 'R$ 4,50', estoque: 35, fornecedor: 'Sítio Raiz' },
-  { id: 6, nome: 'Alface Crespa', categoria: 'Verduras', preco: 'R$ 3,99', estoque: 20, fornecedor: 'Hidroponia Sol' },
-  { id: 7, nome: 'Rúcula', categoria: 'Verduras', preco: 'R$ 3,50', estoque: 15, fornecedor: 'Horta Verde' },
-  { id: 8, nome: 'Uva Verde', categoria: 'Frutas', preco: 'R$ 8,90', estoque: 22, fornecedor: 'Fazenda Verde' }
-];
+var produtos = []; // preenchido por carregarProdutos() com os dados do MySQL
+
+function escapar(texto) {
+  var div = document.createElement('div');
+  div.textContent = texto;
+  return div.innerHTML;
+}
+
+function precoTexto(valor) {
+  return 'R$ ' + Number(valor).toFixed(2).replace('.', ',');
+}
+
+function carregarProdutos() {
+  return fetch('/api/produtos')
+    .then(function (resp) { return resp.json(); })
+    .then(function (dados) {
+      produtos = dados;
+      montarTabela();
+    })
+    .catch(function () {
+      document.getElementById('corpoTabelaProdutos').innerHTML =
+        '<tr><td colspan="7" class="text-center text-danger py-4">Erro ao carregar produtos do banco.</td></tr>';
+    });
+}
+
+function carregarFornecedores() {
+  return fetch('/api/fornecedores')
+    .then(function (resp) { return resp.json(); })
+    .then(function (lista) {
+      var select = document.getElementById('novoFornecedor');
+      select.innerHTML = '<option value="">Selecione</option>';
+      for (var i = 0; i < lista.length; i++) {
+        select.innerHTML += '<option value="' + lista[i].id + '">' + escapar(lista[i].nome_fantasia) + '</option>';
+      }
+    });
+}
 
 var idsParaExcluir = [];
 var tipoExclusao = '';
@@ -29,11 +55,11 @@ function montarTabela() {
 
       linha.innerHTML =
         '<td><input type="checkbox" class="form-check-input checkProduto" value="' + produto.id + '"></td>' +
-        '<td class="fw-semibold">' + produto.nome + '</td>' +
+        '<td class="fw-semibold">' + escapar(produto.nome) + '</td>' +
         '<td><span class="badge rounded-pill badge-categoria">' + produto.categoria + '</span></td>' +
-        '<td>' + produto.preco + '</td>' +
+        '<td>' + precoTexto(produto.preco) + '</td>' +
         '<td>' + produto.estoque + ' unidades</td>' +
-        '<td>' + produto.fornecedor + '</td>' +
+        '<td>' + escapar(produto.fornecedor) + '</td>' +
         '<td class="text-center">' +
           '<button type="button" class="btn-remover-produto" onclick="prepararExclusaoUnica(' + produto.id + ')" title="Remover produto">' +
             '<i class="bi bi-trash3"></i>' +
@@ -138,41 +164,26 @@ function fecharModalExclusao() {
 }
 
 function confirmarExclusao() {
-  var novoVetor = [];
+  var qtd = idsParaExcluir.length;
+  var unico = tipoExclusao == 'unico';
 
-  for (var i = 0; i < produtos.length; i++) {
-    if (idsParaExcluir.indexOf(produtos[i].id) == -1) {
-      novoVetor.push(produtos[i]);
-    }
-  }
+  fetch('/api/produtos/excluir', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: idsParaExcluir })
+  })
+    .then(function (resp) { return resp.json().then(function (c) { return { ok: resp.ok, corpo: c }; }); })
+    .then(function (r) {
+      fecharModalExclusao();
+      if (!r.ok) { mostrarMensagem(r.corpo.erro || 'Erro ao remover.'); return; }
 
-  produtos = novoVetor;
-
-  document.getElementById('marcarTodos').checked = false;
-
-  if (tipoExclusao == 'unico') {
-    mostrarMensagem('Produto removido com sucesso.');
-  } else {
-    mostrarMensagem('Produtos selecionados removidos com sucesso.');
-  }
-
-  idsParaExcluir = [];
-  tipoExclusao = '';
-
-  montarTabela();
-  fecharModalExclusao();
-}
-
-function pegarMaiorId() {
-  var maior = 0;
-
-  for (var i = 0; i < produtos.length; i++) {
-    if (produtos[i].id > maior) {
-      maior = produtos[i].id;
-    }
-  }
-
-  return maior;
+      document.getElementById('marcarTodos').checked = false;
+      mostrarMensagem(unico ? 'Produto removido com sucesso.' : 'Produtos selecionados removidos com sucesso.');
+      idsParaExcluir = [];
+      tipoExclusao = '';
+      return carregarProdutos();
+    })
+    .catch(function () { fecharModalExclusao(); mostrarMensagem('Erro de conexão com o servidor.'); });
 }
 
 function limparCamposAdicionar() {
@@ -188,6 +199,7 @@ function limparCamposAdicionar() {
   document.getElementById('novoEstoque').classList.remove('is-invalid');
   document.getElementById('novoFornecedor').classList.remove('is-invalid');
   document.getElementById('erroAdicionarProduto').classList.add('d-none');
+  document.getElementById('erroAdicionarProduto').innerHTML = 'Preencha corretamente os campos obrigatórios.';
 }
 
 function adicionarProduto() {
@@ -240,34 +252,39 @@ function adicionarProduto() {
     return;
   }
 
-  var precoFormatado = parseFloat(preco.value).toFixed(2);
-  precoFormatado = precoFormatado.replace('.', ',');
+  fetch('/api/produtos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nome: nome.value,
+      categoria: categoria.value,
+      preco: parseFloat(preco.value),
+      estoque: parseInt(estoque.value),
+      fornecedor_id: parseInt(fornecedor.value)
+    })
+  })
+    .then(function (resp) { return resp.json().then(function (c) { return { ok: resp.ok, corpo: c }; }); })
+    .then(function (r) {
+      if (!r.ok) {
+        erro.innerHTML = r.corpo.erro || 'Erro ao salvar o produto.';
+        erro.classList.remove('d-none');
+        return;
+      }
 
-  var novoProduto = {
-    id: pegarMaiorId() + 1,
-    nome: nome.value,
-    categoria: categoria.value,
-    preco: 'R$ ' + precoFormatado,
-    estoque: parseInt(estoque.value),
-    fornecedor: fornecedor.value
-  };
+      document.getElementById('buscaProduto').value = '';
+      document.getElementById('marcarTodos').checked = false;
 
-  produtos.push(novoProduto);
+      var modal = bootstrap.Modal.getInstance(document.getElementById('modalAdicionar'));
+      if (modal) modal.hide();
+      limparCamposAdicionar();
 
-  document.getElementById('buscaProduto').value = '';
-  document.getElementById('marcarTodos').checked = false;
-
-  montarTabela();
-  mostrarMensagem('Produto adicionado com sucesso.');
-
-  var modalElemento = document.getElementById('modalAdicionar');
-  var modal = bootstrap.Modal.getInstance(modalElemento);
-
-  if (modal) {
-    modal.hide();
-  }
-
-  limparCamposAdicionar();
+      mostrarMensagem('Produto adicionado com sucesso.');
+      return carregarProdutos();
+    })
+    .catch(function () {
+      erro.innerHTML = 'Erro de conexão com o servidor.';
+      erro.classList.remove('d-none');
+    });
 }
 
 function mostrarMensagem(texto) {
@@ -305,5 +322,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.getElementById('modalAdicionar').addEventListener('hidden.bs.modal', limparCamposAdicionar);
 
-  montarTabela();
+  carregarFornecedores();
+  carregarProdutos();
 });

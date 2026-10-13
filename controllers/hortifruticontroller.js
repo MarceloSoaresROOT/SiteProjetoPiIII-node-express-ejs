@@ -1,32 +1,34 @@
 // controllers/hortifruticontroller.js
+const pool = require('../db/db');
 
 class Quitandacontroller {
 
-    // Em uma classe, declaramos os métodos assim, sem o "exports."
-    rotaindex(req, res) {
-        // Renderiza o arquivo views/index.ejs
-        res.render('index'); 
+    // Home: a vitrine vem do banco de dados
+    async rotaindex(req, res) {
+        const [produtos] = await pool.query(
+            `SELECT id, nome, categoria, preco, unidade, estoque, descricao, imagem
+               FROM produtos WHERE ativo = 1
+              ORDER BY FIELD(categoria,'Frutas','Legumes','Verduras'), nome`
+        );
+        res.render('index', { produtos });
     }
 
     rotagestao_produtos(req, res) {
-        // Renderiza o arquivo views/gestao-produtos.ejs
+        // A tabela é montada no navegador com os dados de /api/produtos
         res.render('gestao-produtos');
     }
 
     rotacartilhas(req, res) {
-        // Renderiza o arquivo views/cartilhas.ejs
         res.render('cartilhas');
     }
 
     rotacadastro_fornecedores(req, res) {
-        // Renderiza o arquivo views/cadastro-fornecedores.ejs
         res.render('cadastro-fornecedores');
     }
-    rotacadastro_clientes(req,res){
-        //Renderiza o arquivo views/cadastro-clientes.ejs
+
+    rotacadastro_clientes(req, res) {
         res.render('cadastro-clientes');
     }
 }
 
-// Exporta a classe inteira no final
 module.exports = Quitandacontroller;

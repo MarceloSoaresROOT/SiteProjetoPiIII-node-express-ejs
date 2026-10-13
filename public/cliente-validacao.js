@@ -93,9 +93,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (obs.value.trim() != '') validar(obs, obs.value.trim().length >= 10); else limparValidacao(obs);
 
+    var msg = document.getElementById('msgSucessoCliente');
     if (ok) {
-      document.getElementById('msgSucessoCliente').classList.remove('d-none');
-      document.getElementById('msgSucessoCliente').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var dados = {
+        nome: nome.value, cpf: cpf.value, dataNascimento: nasc.value, celular: celular.value, telefone: tel.value,
+        email: email.value, cep: cep.value, rua: rua.value, numero: numero.value, bairro: bairro.value,
+        cidade: cidade.value, estado: estado.value, complemento: document.getElementById('cliComplemento').value,
+        preferenciaEntrega: entrega.value, pagamentoPreferido: pagamento.value, senha: senha.value,
+        interesses: Array.prototype.map.call(interesses, function (i) { return i.value; }),
+        observacoes: obs.value
+      };
+
+      fetch('/api/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      })
+        .then(function (resp) { return resp.json().catch(function () { return {}; }).then(function (corpo) { return { ok: resp.ok, corpo: corpo }; }); })
+        .then(function (r) {
+          msg.classList.remove('d-none', 'alert-success', 'alert-danger');
+          if (r.ok) {
+            msg.classList.add('alert-success');
+            msg.innerHTML = 'Cliente cadastrado com sucesso.';
+          } else {
+            msg.classList.add('alert-danger');
+            msg.innerHTML = r.corpo.erro || 'Não foi possível cadastrar o cliente.';
+          }
+          msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        })
+        .catch(function () {
+          msg.classList.remove('d-none', 'alert-success');
+          msg.classList.add('alert-danger');
+          msg.innerHTML = 'Erro de conexão com o servidor.';
+        });
     }
   });
 });

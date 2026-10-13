@@ -3,6 +3,19 @@
 
 var carrinho = [];
 
+// Envia JSON para a API e devolve { ok, status, dados }
+function chamarApi(url, dados) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dados)
+  }).then(function (resp) {
+    return resp.json().catch(function () { return {}; }).then(function (corpo) {
+      return { ok: resp.ok, status: resp.status, dados: corpo };
+    });
+  });
+}
+
 function scrollToProducts() {
   document.getElementById('produtos').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -129,6 +142,7 @@ function mostrarMensagemCarrinho(texto) {
 
 function abrirCarrinho() {
   atualizarCarrinho();
+  preencherEntregaDoCliente();
   var modal = new bootstrap.Modal(document.getElementById('modalCarrinho'));
   modal.show();
 }
@@ -157,7 +171,8 @@ function pesquisarProdutos() {
 
   for (var i = 0; i < produtos.length; i++) {
     var nome = produtos[i].getAttribute('data-name');
-    if (nome == null) nome = produtos[i].querySelector('h3').innerHTML.toLowerCase();
+    if (nome == null) nome = produtos[i].querySelector('h3').innerHTML;
+    nome = nome.toLowerCase();
     produtos[i].style.display = (nome.indexOf(texto) >= 0) ? 'block' : 'none';
   }
 }
@@ -232,12 +247,35 @@ function mascaraValidade(campo) {
   campo.value = valor;
 }
 
-function mostrarMensagemConta(texto) {
+function mostrarMensagemConta(texto, erro) {
   var mensagem = document.getElementById('mensagemConta');
   if (mensagem == null) return;
   mensagem.innerHTML = texto;
-  mensagem.classList.remove('d-none');
-  setTimeout(function () { mensagem.classList.add('d-none'); }, 2500);
+  mensagem.classList.remove('d-none', 'alert-success', 'alert-danger');
+  mensagem.classList.add(erro ? 'alert-danger' : 'alert-success');
+  setTimeout(function () { mensagem.classList.add('d-none'); }, erro ? 5000 : 2500);
+}
+
+// ----- cliente logado (guardado no navegador; a senha é conferida no servidor) -----
+function clienteLogado() {
+  try { return JSON.parse(localStorage.getItem('greengoCliente')); } catch (e) { return null; }
+}
+
+function atualizarBotaoConta() {
+  var botao = document.getElementById('btn-conta');
+  var cliente = clienteLogado();
+  if (botao != null) botao.innerHTML = cliente ? 'Olá, ' + cliente.nome.split(' ')[0] + ' (sair)' : 'Minha Conta';
+}
+
+function preencherEntregaDoCliente() {
+  var c = clienteLogado();
+  if (!c) return;
+  var mapa = { compraNome: c.nome, compraTelefone: c.telefone, compraCep: c.cep, compraRua: c.rua,
+               compraNumero: c.numero, compraBairro: c.bairro, compraCidade: c.cidade, compraUf: c.uf };
+  for (var id in mapa) {
+    var campo = document.getElementById(id);
+    if (campo && campo.value == '' && mapa[id]) campo.value = mapa[id];
+  }
 }
 
 function validarLogin(evento) {
@@ -249,7 +287,20 @@ function validarLogin(evento) {
   if (email.value.indexOf('@') == -1 || email.value.indexOf('.') == -1) { email.classList.add('is-invalid'); valido = false; } else { email.classList.remove('is-invalid'); email.classList.add('is-valid'); }
   if (senha.value.trim() == '') { senha.classList.add('is-invalid'); valido = false; } else { senha.classList.remove('is-invalid'); senha.classList.add('is-valid'); }
 
-  if (valido) mostrarMensagemConta('Login de cliente validado.');
+  if (valido) {
+    chamarApi('/api/login', { email: email.value, senha: senha.value })
+      .then(function (r) {
+        if (r.ok) {
+          try { localStorage.setItem('greengoCliente', JSON.stringify(r.dados)); } catch (e) {}
+          atualizarBotaoConta();
+          mostrarMensagemConta('Bem-vindo(a), ' + r.dados.nome + '!');
+          setTimeout(function () { bootstrap.Modal.getOrCreateInstance(document.getElementById('modalConta')).hide(); }, 1200);
+        } else {
+          mostrarMensagemConta(r.dados.erro || 'Não foi possível entrar.', true);
+        }
+      })
+      .catch(function () { mostrarMensagemConta('Erro de conexão com o servidor.', true); });
+  }
 }
 
 function validarCriarConta(evento) {
@@ -284,7 +335,21 @@ function validarCriarConta(evento) {
   marcar(senha, senha.value.length >= 6);
   marcar(confirmaSenha, confirmaSenha.value == senha.value && confirmaSenha.value != '');
 
-  if (valido) mostrarMensagemConta('Conta criada com sucesso.');
+  if (valido) {
+    chamarApi('/api/clientes', {
+      nome: nome.value, cpf: cpf.value, telefone: telefone.value, email: email.value, senha: senha.value
+    })
+      .then(function (r) {
+        if (r.ok) {
+          mostrarMensagemConta('Conta criada com sucesso! Agora faça login na aba "Entrar".');
+          document.getElementById('loginEmail').value = email.value;
+          setTimeout(function () { bootstrap.Tab.getOrCreateInstance(document.getElementById('aba-entrar')).show(); }, 1800);
+        } else {
+          mostrarMensagemConta(r.dados.erro || 'Não foi possível criar a conta.', true);
+        }
+      })
+      .catch(function () { mostrarMensagemConta('Erro de conexão com o servidor.', true); });
+  }
 }
 
 function mudarPagamento() {
@@ -321,27 +386,62 @@ function finalizarWhatsApp(evento) {
 
   if (!valido) return;
 
-  var total = 0;
-  var mensagem = 'Olá, quero fazer um pedido na GreenGo:%0A%0A';
-  for (var j = 0; j < carrinho.length; j++) {
-    var item = carrinho[j];
-    var subtotal = item.preco * item.quantidade;
-    total = total + subtotal;
-    mensagem += '- ' + item.quantidade + 'x ' + item.nome + ' = R$ ' + dinheiro(subtotal) + '%0A';
-  }
+  var dadosPedido = {
+    nome: document.getElementById('compraNome').value,
+    telefone: document.getElementById('compraTelefone').value,
+    cep: document.getElementById('compraCep').value,
+    rua: document.getElementById('compraRua').value,
+    numero: document.getElementById('compraNumero').value,
+    bairro: document.getElementById('compraBairro').value,
+    cidade: document.getElementById('compraCidade').value,
+    uf: document.getElementById('compraUf').value,
+    observacao: document.getElementById('compraObs').value,
+    pagamento: pagamento,
+    clienteId: clienteLogado() ? clienteLogado().id : null,
+    itens: carrinho.map(function (item) { return { nome: item.nome, quantidade: item.quantidade }; })
+  };
 
-  mensagem += '%0ATotal: R$ ' + dinheiro(total);
-  mensagem += '%0APagamento: ' + pagamento;
-  mensagem += '%0A%0ADados da entrega:';
-  mensagem += '%0ANome: ' + document.getElementById('compraNome').value;
-  mensagem += '%0ATelefone: ' + document.getElementById('compraTelefone').value;
-  mensagem += '%0AEndereço: ' + document.getElementById('compraRua').value + ', ' + document.getElementById('compraNumero').value;
-  mensagem += '%0ABairro: ' + document.getElementById('compraBairro').value;
-  mensagem += '%0ACidade/UF: ' + document.getElementById('compraCidade').value + '/' + document.getElementById('compraUf').value;
-  mensagem += '%0ACEP: ' + document.getElementById('compraCep').value;
-  mensagem += '%0AObservação: ' + document.getElementById('compraObs').value;
+  // abre a aba já (antes do fetch) para o navegador não bloquear o pop-up
+  var janelaWhats = window.open('', '_blank');
 
-  window.open('https://wa.me/5518999999999?text=' + mensagem, '_blank');
+  chamarApi('/api/pedidos', dadosPedido)
+    .then(function (r) {
+      if (!r.ok) {
+        if (janelaWhats) janelaWhats.close();
+        mostrarMensagemCarrinho(r.dados.erro || 'Não foi possível registrar o pedido.');
+        return;
+      }
+
+      var mensagem = 'Olá, quero fazer um pedido na GreenGo (pedido nº ' + r.dados.id + '):\n\n';
+      for (var j = 0; j < carrinho.length; j++) {
+        var item = carrinho[j];
+        mensagem += '- ' + item.quantidade + 'x ' + item.nome + ' = R$ ' + dinheiro(item.preco * item.quantidade) + '\n';
+      }
+      mensagem += '\nTotal: R$ ' + dinheiro(r.dados.total);
+      mensagem += '\nPagamento: ' + pagamento;
+      mensagem += '\n\nDados da entrega:';
+      mensagem += '\nNome: ' + dadosPedido.nome;
+      mensagem += '\nTelefone: ' + dadosPedido.telefone;
+      mensagem += '\nEndereço: ' + dadosPedido.rua + ', ' + dadosPedido.numero;
+      mensagem += '\nBairro: ' + dadosPedido.bairro;
+      mensagem += '\nCidade/UF: ' + dadosPedido.cidade + '/' + dadosPedido.uf;
+      mensagem += '\nCEP: ' + dadosPedido.cep;
+      mensagem += '\nObservação: ' + dadosPedido.observacao;
+
+      var url = 'https://wa.me/5518999999999?text=' + encodeURIComponent(mensagem);
+      if (janelaWhats) janelaWhats.location = url; else window.open(url, '_blank');
+
+      carrinho = [];
+      atualizarCarrinho();
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCarrinho')).hide();
+      mostrarMensagemCarrinho('Pedido nº ' + r.dados.id + ' registrado!');
+      // recarrega a vitrine para mostrar o estoque já com a baixa (produtos esgotados)
+      setTimeout(function () { window.location.reload(); }, 2500);
+    })
+    .catch(function () {
+      if (janelaWhats) janelaWhats.close();
+      mostrarMensagemCarrinho('Erro de conexão com o servidor.');
+    });
 }
 
 function mostrarAdminPorParametro() {
@@ -363,6 +463,13 @@ document.addEventListener('DOMContentLoaded', function () {
   if (botaoConta != null) {
     botaoConta.addEventListener('click', function (e) {
       e.preventDefault();
+      if (clienteLogado()) {
+        if (confirm('Deseja sair da conta de ' + clienteLogado().nome + '?')) {
+          try { localStorage.removeItem('greengoCliente'); } catch (err) {}
+          atualizarBotaoConta();
+        }
+        return;
+      }
       var modal = new bootstrap.Modal(document.getElementById('modalConta'));
       modal.show();
     });
@@ -389,5 +496,6 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('formCompra')) document.getElementById('formCompra').addEventListener('submit', finalizarWhatsApp);
 
   mostrarAdminPorParametro();
+  atualizarBotaoConta();
   atualizarCarrinho();
 });

@@ -131,101 +131,18 @@
   </div>
 
   <div class="grid" id="produtos-grid">
-    <!-- FRUTAS -->
-    <div class="produto" data-name="Banana" data-categoria="frutas" data-preco="4.99" data-descricao="Bananas doces e maduras, perfeitas para vitaminas e lanches." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/banana.jpg" alt="Banana">
-      <h3>Banana</h3>
-      <p>R$ 3,99/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Banana', '4.99')">Adicionar</button>
+    <% produtos.forEach(function (p) { %>
+    <div class="produto" data-name="<%= p.nome %>" data-categoria="<%= p.categoria.toLowerCase() %>" data-preco="<%= p.preco.toFixed(2) %>" data-descricao="<%= p.descricao || 'Produto fresco e saboroso.' %>" onclick="abrirProdutoDetalhe(event, this)" role="button">
+      <img src="imagens-produtos/imagens/<%= encodeURIComponent(p.imagem || 'logo.png') %>" alt="<%= p.nome %>">
+      <h3><%= p.nome %></h3>
+      <p>R$ <%= p.preco.toFixed(2).replace('.', ',') %>/<%= p.unidade %></p>
+      <% if (p.estoque > 0) { %>
+      <button onclick="event.stopPropagation(); var d = this.closest('.produto').dataset; adicionarAoCarrinho(d.name, d.preco)">Adicionar</button>
+      <% } else { %>
+      <button disabled>Esgotado</button>
+      <% } %>
     </div>
-    <div class="produto" data-name="Laranja" data-categoria="frutas" data-preco="5.20" data-descricao="Laranjas suculentas e perfeitas para sucos frescos." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/laranja.jpg" alt="Laranja">
-      <h3>Laranja</h3>
-      <p>R$ 5,20/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Laranja', '5.20')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Maçã Gala" data-categoria="frutas" data-preco="5.99" data-descricao="Maçã Gala crocante e adocicada, ótima para saladas e sobremesas." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/maçã.jpg" alt="Maçã Gala">
-      <h3>Maçã Gala</h3>
-      <p>R$ 5,99/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Maçã Gala', '5.99')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Melancia" data-categoria="frutas" data-preco="8.90" data-descricao="Melancia fresca e doce, ótima para dias quentes." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/melancia.jpg" alt="Melancia">
-      <h3>Melancia</h3>
-      <p>R$ 8,90/un</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Melancia', '8.90')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Morango" data-categoria="frutas" data-preco="10.22" data-descricao="Morangos vermelhos e aromáticos, saborosos e frescos." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/morango.jpg" alt="Morango">
-      <h3>Morango</h3>
-      <p>R$ 10,22/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Morango', '10.22')">Adicionar</button>
-    </div>
-
-    <!-- LEGUMES -->
-    <div class="produto" data-name="Abóbora" data-categoria="legumes" data-preco="4.80" data-descricao="Abóbora macia e nutritiva, ótima para sopas e refogados." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/abobora.jpg" alt="Abóbora">
-      <h3>Abóbora</h3>
-      <p>R$ 4,80/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Abóbora', '4.80')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Batata" data-categoria="legumes" data-preco="3.50" data-descricao="Batatas firmes e versáteis, ideais para assar, fritar ou cozinhar." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/batatas.jpg" alt="Batata">
-      <h3>Batata</h3>
-      <p>R$ 3,50/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Batata', '3.50')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Cenoura" data-categoria="legumes" data-preco="4.50" data-descricao="Cenouras crocantes e doces, ricas em vitamina A." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/cenoura.jpg" alt="Cenoura">
-      <h3>Cenoura</h3>
-      <p>R$ 4,50/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Cenoura', '4.50')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Repolho" data-categoria="legumes" data-preco="3.20" data-descricao="Repolho fresco para saladas, refogados e pratos saudáveis." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/repolho.jpg" alt="Repolho">
-      <h3>Repolho</h3>
-      <p>R$ 3,20/un</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Repolho', '3.20')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Tomate" data-categoria="legumes" data-preco="6.99" data-descricao="Tomates maduros e suculentos, perfeitos para salada e molho." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/tomates.jpg" alt="Tomate">
-      <h3>Tomate</h3>
-      <p>R$ 4,99/kg</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Tomate', '6.99')">Adicionar</button>
-    </div>
-
-    <!-- VERDURAS  -->
-    <div class="produto" data-name="Acelga" data-categoria="verduras" data-preco="3.50" data-descricao="Acelga fresca com talos crocantes, fonte de fibras." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/acelga.jpg" alt="Acelga">
-      <h3>Acelga</h3>
-      <p>R$ 3,50/maço</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Acelga', '3.50')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Alface Crespa" data-categoria="verduras" data-preco="3.99" data-descricao="Alface crocante para sanduíches e saladas frescas." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/alface.jpg" alt="Alface Crespa">
-      <h3>Alface Crespa</h3>
-      <p>R$ 1,79/un</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Alface Crespa', '3.99')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Couve" data-categoria="verduras" data-preco="2.99" data-descricao="Couve verde para sucos, refogados e acompanhamentos." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/couve.jpg" alt="Couve">
-      <h3>Couve</h3>
-      <p>R$ 2,99/maço</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Couve', '2.99')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Espinafre" data-categoria="verduras" data-preco="4.20" data-descricao="Espinafre fresco e saudável, rico em ferro." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/espinafre.jpg" alt="Espinafre">
-      <h3>Espinafre</h3>
-      <p>R$ 4,20/maço</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Espinafre', '4.20')">Adicionar</button>
-    </div>
-    <div class="produto" data-name="Rúcula" data-categoria="verduras" data-preco="3.80" data-descricao="Rúcula picante para dar sabor extra às suas receitas." onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/rucula.jpg" alt="Rúcula">
-      <h3>Rúcula</h3>
-      <p>R$ 3,80/maço</p>
-      <button onclick="event.stopPropagation(); adicionarAoCarrinho('Rúcula', '3.80')">Adicionar</button>
-    </div>
+    <% }); %>
   </div>
   <div id="no-results" class="no-results" style="display: none;">
     <p>Nenhum produto encontrado para sua busca.</p>

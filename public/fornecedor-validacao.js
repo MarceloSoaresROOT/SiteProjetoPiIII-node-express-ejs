@@ -131,9 +131,55 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (valido) {
-      msgSucesso.classList.remove('d-none');
-      msgSucesso.innerHTML = 'Fornecedor cadastrado com sucesso. Validações aplicadas com JavaScript e Bootstrap.';
-      form.scrollIntoView({ behavior: 'smooth' });
+      var entregaEscolhida = document.querySelector('input[name="tipoEntrega"]:checked');
+      var dados = {
+        razaoSocial: document.getElementById('razaoSocial').value,
+        nomeFantasia: document.getElementById('nomeFantasia').value,
+        cnpj: cnpj.value,
+        inscricaoEstadual: inscricao.value,
+        dataCadastro: dataCadastro.value,
+        responsavel: responsavel.value,
+        email: email.value,
+        telefone: telefone.value,
+        celular: celular.value,
+        site: document.getElementById('site').value,
+        cep: cep.value,
+        logradouro: document.getElementById('logradouro').value,
+        numero: numero.value,
+        bairro: document.getElementById('bairro').value,
+        cidade: cidade.value,
+        estado: estado.value,
+        complemento: document.getElementById('complemento').value,
+        categoriaPrincipal: categoria.value,
+        valorMinimo: valor,
+        prazoEntrega: prazo.value,
+        tipoEntrega: entregaEscolhida.value,
+        produtosFornecidos: Array.prototype.map.call(produtos, function (p) { return p.value; }),
+        observacoes: observacoes.value
+      };
+
+      fetch('/api/fornecedores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      })
+        .then(function (resp) { return resp.json().catch(function () { return {}; }).then(function (corpo) { return { ok: resp.ok, corpo: corpo }; }); })
+        .then(function (r) {
+          msgSucesso.classList.remove('d-none', 'alert-success', 'alert-danger');
+          if (r.ok) {
+            msgSucesso.classList.add('alert-success');
+            msgSucesso.innerHTML = 'Fornecedor cadastrado com sucesso.';
+          } else {
+            msgSucesso.classList.add('alert-danger');
+            msgSucesso.innerHTML = r.corpo.erro || 'Não foi possível cadastrar o fornecedor.';
+          }
+          form.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(function () {
+          msgSucesso.classList.remove('d-none', 'alert-success');
+          msgSucesso.classList.add('alert-danger');
+          msgSucesso.innerHTML = 'Erro de conexão com o servidor.';
+        });
     } else {
       msgSucesso.classList.add('d-none');
     }
