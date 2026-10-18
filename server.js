@@ -15,6 +15,19 @@ app.use(express.json());
 // Rotas
 // server.use("/api", require("./routes/apirouter"));
 app.use("/", require("./routes/hortifrutirouter"));
+app.use("/clientes", require("./routes/clientesRoute"));
+app.use("/fornecedores", require("./routes/fornecedorRoute"));
+app.use("/produtos", require("./routes/produtosRoute"));
+app.use("/lotes", require("./routes/loteRoute"));
+app.use("/marcas", require("./routes/marcasRoute"));
+app.use("/categorias", require("./routes/categoriaRoute"));
+app.use("/categorias", require("./routes/categoriaRoute"));
+app.use("/funcionarios", require("./routes/funcionarioRoute"));
+
+
+
+
+
 
 // Tratamento de erros (ex.: banco fora do ar)
 app.use((err, req, res, next) => {

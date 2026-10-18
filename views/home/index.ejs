@@ -18,12 +18,12 @@
   </div>
   <!-- Menu de navegação  -->
   <nav class="menu-links">
-    <a href="/index#inicio">Início</a>
+    <a href="/">Início</a>
     <a href="#ofertas">Ofertas</a>
     <a href="#produtos">Produtos</a>
     <a href="#sobre">Sobre</a>
-    <a href="/cadastro-clientes">Cliente</a>
-    <a href="/cadastro-fornecedores">Fornecedor</a>
+    <a href="/clientes">Cliente</a>
+    <a href="/fornecedores">Fornecedor</a>
     <a href="/gestao-produtos">Gestão</a>
     <a href="#" id="btn-conta">Minha Conta</a>
   </nav>
@@ -131,18 +131,7 @@
   </div>
 
   <div class="grid" id="produtos-grid">
-    <% produtos.forEach(function (p) { %>
-    <div class="produto" data-name="<%= p.nome %>" data-categoria="<%= p.categoria.toLowerCase() %>" data-preco="<%= p.preco.toFixed(2) %>" data-descricao="<%= p.descricao || 'Produto fresco e saboroso.' %>" onclick="abrirProdutoDetalhe(event, this)" role="button">
-      <img src="imagens-produtos/imagens/<%= encodeURIComponent(p.imagem || 'logo.png') %>" alt="<%= p.nome %>">
-      <h3><%= p.nome %></h3>
-      <p>R$ <%= p.preco.toFixed(2).replace('.', ',') %>/<%= p.unidade %></p>
-      <% if (p.estoque > 0) { %>
-      <button onclick="event.stopPropagation(); var d = this.closest('.produto').dataset; adicionarAoCarrinho(d.name, d.preco)">Adicionar</button>
-      <% } else { %>
-      <button disabled>Esgotado</button>
-      <% } %>
-    </div>
-    <% }); %>
+    <!-- telas de produtos -->
   </div>
   <div id="no-results" class="no-results" style="display: none;">
     <p>Nenhum produto encontrado para sua busca.</p>
@@ -476,10 +465,10 @@
   <div class="footer-bottom">
     <p class="mb-2">&copy; 2026 Green Go S/A. Todos os direitos reservados.</p>
     <div class="footer-links-greengo">
-        <a href="/cadastro-clientes">Cliente</a>
-        <a href="/cadastro-fornecedores">Fornecedor</a>
+        <a href="/clientes">Cliente</a>
+        <a href="/fornecedores">Fornecedor</a>
       <a href="/gestao-produtos">Gestão</a>
-        <a href="/index">Início</a>
+        <a href="/">Início</a>
     </div>
   </div>
 </footer>

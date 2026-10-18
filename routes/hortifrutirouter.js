@@ -4,9 +4,10 @@ const Quitandacontroller = require('../controllers/hortifruticontroller');
 const router = express.Router();
 
 let controller = new Quitandacontroller();
+
+// rota pagina inicial
 router.get('/', controller.rotaPrincipal);
+// rota gestao de produtos
 router.get('/gestao-produtos', controller.rotagestao_produtos);
-router.get('/cadastro-fornecedores', controller.rotacadastro_fornecedores);
-router.get('/cadastro-clientes', controller.rotacadastro_clientes);
 
 module.exports = router;

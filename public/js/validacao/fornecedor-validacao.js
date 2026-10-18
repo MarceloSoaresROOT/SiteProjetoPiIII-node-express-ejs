@@ -1,14 +1,20 @@
 document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('formCadastroFornecedor');
-  var observacoes = document.getElementById('observacoes');
-  var contadorObs = document.getElementById('contadorObs');
-  var msgSucesso = document.getElementById('msgSucesso');
+  if (!form) return;
+
+  var modalEl = document.getElementById('modalAdicionar');
+  var erroForm = document.getElementById('erroAdicionarFornecedor');
   var cep = document.getElementById('cep');
 
-  observacoes.addEventListener('input', function () {
-    contadorObs.innerHTML = observacoes.value.length;
-  });
+  function limparTudo() {
+    var campos = form.querySelectorAll('.is-valid, .is-invalid');
+    for (var i = 0; i < campos.length; i++) limparValidacao(campos[i]);
+    var erroCep = document.getElementById('erroCepFornecedor');
+    if (erroCep) erroCep.textContent = '';
+    erroForm.classList.add('d-none');
+  }
 
+  // CEP: preenche o endereço ao sair do campo
   if (cep) {
     cep.addEventListener('blur', function () {
       preencherEnderecoCep('cep', 'logradouro', 'bairro', 'cidade', 'estado', 'erroCepFornecedor');
@@ -20,20 +26,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  document.getElementById('btnLimpar').addEventListener('click', function () {
-    setTimeout(function () {
-      var campos = form.querySelectorAll('.is-valid, .is-invalid');
-      for (i = 0; i < campos.length; i++) limparValidacao(campos[i]);
-      document.getElementById('erroEntrega').innerHTML = '';
-      document.getElementById('erroProdutos').innerHTML = '';
-      contadorObs.innerHTML = '0';
-      msgSucesso.classList.add('d-none');
-    }, 50);
-  });
+  // Ao abrir o modal limpa as marcações; ao fechar limpa o formulário
+  if (modalEl) {
+    modalEl.addEventListener('show.bs.modal', limparTudo);
+    modalEl.addEventListener('hidden.bs.modal', function () {
+      form.reset();
+      document.getElementById('idEdicao').value = '';
+      limparTudo();
+    });
+  }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var valido = true;
+    var editando = document.getElementById('idEdicao').value != '';
 
     function validarTexto(id, minimo) {
       var campo = document.getElementById(id);
@@ -46,18 +52,33 @@ document.addEventListener('DOMContentLoaded', function () {
       return false;
     }
 
+    // tb_pessoa
+    var email = document.getElementById('email');
+    if (email.value.indexOf('@') > 0 && email.value.indexOf('.') > 0) campoValido(email); else { campoInvalido(email); valido = false; }
+
+    var senha = document.getElementById('senha');
+    if (editando || senha.value.length >= 1) campoValido(senha); else { campoInvalido(senha); valido = false; }
+
+    var telefone = document.getElementById('telefone');
+    if (limparNumero(telefone.value).length == 10 || limparNumero(telefone.value).length == 11) campoValido(telefone); else { campoInvalido(telefone); valido = false; }
+
+    // tb_pessoa_juridica
     validarTexto('razaoSocial', 3);
     validarTexto('nomeFantasia', 3);
+
+    var cnpj = document.getElementById('cnpj');
+    if (validarCNPJValor(cnpj.value)) campoValido(cnpj); else { campoInvalido(cnpj); valido = false; }
+
+    // tb_fornecedor
+    var dataCadastro = document.getElementById('dataCadastro');
+    var hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    var dataEscolhida = new Date(dataCadastro.value + 'T00:00:00');
+    if (dataCadastro.value != '' && dataEscolhida <= hoje) campoValido(dataCadastro); else { campoInvalido(dataCadastro); valido = false; }
+
+    // tb_endereco
     validarTexto('logradouro', 3);
     validarTexto('bairro', 3);
-
-    var responsavel = document.getElementById('responsavel');
-    if (responsavel.value.trim().length >= 3 && textoSemNumero(responsavel.value)) {
-      campoValido(responsavel);
-    } else {
-      campoInvalido(responsavel);
-      valido = false;
-    }
 
     var cidade = document.getElementById('cidade');
     if (cidade.value.trim().length >= 3 && textoSemNumero(cidade.value)) {
@@ -67,29 +88,8 @@ document.addEventListener('DOMContentLoaded', function () {
       valido = false;
     }
 
-    var cnpj = document.getElementById('cnpj');
-    if (validarCNPJValor(cnpj.value)) campoValido(cnpj); else { campoInvalido(cnpj); valido = false; }
-
-    var inscricao = document.getElementById('inscricaoEstadual');
-    if (inscricao.value == '' || limparNumero(inscricao.value).length >= 6) campoValido(inscricao); else { campoInvalido(inscricao); valido = false; }
-
-    var dataCadastro = document.getElementById('dataCadastro');
-    var hoje = new Date();
-    hoje.setHours(0,0,0,0);
-    var dataEscolhida = new Date(dataCadastro.value + 'T00:00:00');
-    if (dataCadastro.value != '' && dataEscolhida <= hoje) campoValido(dataCadastro); else { campoInvalido(dataCadastro); valido = false; }
-
-    var email = document.getElementById('email');
-    if (email.value.indexOf('@') > 0 && email.value.indexOf('.') > 0) campoValido(email); else { campoInvalido(email); valido = false; }
-
-    var telefone = document.getElementById('telefone');
-    if (limparNumero(telefone.value).length == 10 || limparNumero(telefone.value).length == 11) campoValido(telefone); else { campoInvalido(telefone); valido = false; }
-
-    var celular = document.getElementById('celular');
-    if (celular.value == '' || limparNumero(celular.value).length == 11) campoValido(celular); else { campoInvalido(celular); valido = false; }
-
-    var cep = document.getElementById('cep');
-    if (limparNumero(cep.value).length == 8) campoValido(cep); else { campoInvalido(cep); valido = false; }
+    var cepCampo = document.getElementById('cep');
+    if (limparNumero(cepCampo.value).length == 8) campoValido(cepCampo); else { campoInvalido(cepCampo); valido = false; }
 
     var numero = document.getElementById('numero');
     if (limparNumero(numero.value).length >= 1) campoValido(numero); else { campoInvalido(numero); valido = false; }
@@ -97,91 +97,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var estado = document.getElementById('estado');
     if (estado.value != '') campoValido(estado); else { campoInvalido(estado); valido = false; }
 
-    var categoria = document.getElementById('categoriaPrincipal');
-    if (categoria.value != '') campoValido(categoria); else { campoInvalido(categoria); valido = false; }
-
-    var valorMinimo = document.getElementById('valorMinimo');
-    var valor = valorMoedaNumero(valorMinimo.value);
-    if (valor >= 50 && valor <= 50000) campoValido(valorMinimo); else { campoInvalido(valorMinimo); valido = false; }
-
-    var prazo = document.getElementById('prazoEntrega');
-    if (prazo.value != '') campoValido(prazo); else { campoInvalido(prazo); valido = false; }
-
-    var entrega = document.querySelector('input[name="tipoEntrega"]:checked');
-    if (entrega == null) {
-      document.getElementById('erroEntrega').innerHTML = 'Selecione o tipo de entrega.';
-      valido = false;
-    } else {
-      document.getElementById('erroEntrega').innerHTML = '';
+    if (!valido) {
+      erroForm.textContent = 'Preencha corretamente os campos obrigatórios.';
+      erroForm.classList.remove('d-none');
+      return;
     }
+    erroForm.classList.add('d-none');
 
-    var produtos = document.querySelectorAll('.produto-fornecido:checked');
-    if (produtos.length == 0) {
-      document.getElementById('erroProdutos').innerHTML = 'Selecione pelo menos um tipo de produto.';
-      valido = false;
-    } else {
-      document.getElementById('erroProdutos').innerHTML = '';
-    }
-
-    if (observacoes.value.trim() != '' && observacoes.value.trim().length < 10) {
-      campoInvalido(observacoes);
-      valido = false;
-    } else {
-      campoValido(observacoes);
-    }
-
-    if (valido) {
-      var entregaEscolhida = document.querySelector('input[name="tipoEntrega"]:checked');
-      var dados = {
-        razaoSocial: document.getElementById('razaoSocial').value,
-        nomeFantasia: document.getElementById('nomeFantasia').value,
-        cnpj: cnpj.value,
-        inscricaoEstadual: inscricao.value,
-        dataCadastro: dataCadastro.value,
-        responsavel: responsavel.value,
-        email: email.value,
-        telefone: telefone.value,
-        celular: celular.value,
-        site: document.getElementById('site').value,
-        cep: cep.value,
-        logradouro: document.getElementById('logradouro').value,
-        numero: numero.value,
-        bairro: document.getElementById('bairro').value,
-        cidade: cidade.value,
-        estado: estado.value,
-        complemento: document.getElementById('complemento').value,
-        categoriaPrincipal: categoria.value,
-        valorMinimo: valor,
-        prazoEntrega: prazo.value,
-        tipoEntrega: entregaEscolhida.value,
-        produtosFornecidos: Array.prototype.map.call(produtos, function (p) { return p.value; }),
-        observacoes: observacoes.value
-      };
-
-      fetch('/api/fornecedores', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-      })
-        .then(function (resp) { return resp.json().catch(function () { return {}; }).then(function (corpo) { return { ok: resp.ok, corpo: corpo }; }); })
-        .then(function (r) {
-          msgSucesso.classList.remove('d-none', 'alert-success', 'alert-danger');
-          if (r.ok) {
-            msgSucesso.classList.add('alert-success');
-            msgSucesso.innerHTML = 'Fornecedor cadastrado com sucesso.';
-          } else {
-            msgSucesso.classList.add('alert-danger');
-            msgSucesso.innerHTML = r.corpo.erro || 'Não foi possível cadastrar o fornecedor.';
-          }
-          form.scrollIntoView({ behavior: 'smooth' });
-        })
-        .catch(function () {
-          msgSucesso.classList.remove('d-none', 'alert-success');
-          msgSucesso.classList.add('alert-danger');
-          msgSucesso.innerHTML = 'Erro de conexão com o servidor.';
-        });
-    } else {
-      msgSucesso.classList.add('d-none');
-    }
+    // Formulário válido. O envio (fetch) entra aqui depois.
   });
 });
