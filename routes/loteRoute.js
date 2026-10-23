@@ -6,6 +6,6 @@ const router = express.Router();
 let controller = new loteController();
 
 // rota cadastro de clientes
-router.get('/', controller.listarLote);
-
+router.get('/', controller.listarLotesView);
+router.post('/cadastrar',controller.cadastroLote)
 module.exports = router;
