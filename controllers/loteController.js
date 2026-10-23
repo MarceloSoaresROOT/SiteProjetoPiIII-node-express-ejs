@@ -54,7 +54,21 @@ class loteController
         if(req.params.id != undefined && req.params.id != ""){
             lote = await lote.obter(req.params.id);
         }
-        res.render("lotes/lote", {produtos, lote});
+        
+        res.render("lotes/alterarLote", {produtos, lote});
+    }
+        async alterarLote(req, res) {
+        var ok = true;
+        if(req.body.id_lote != "" && req.body.id_produto != "" && req.body.numero_lote != ""  && req.body.data_validade != "" && req.body.quantidade_atual>0) {
+
+            let lote = new loteModel(req.body.id_lote,req.body.id_produto,req.body.numero_lote,req.body.data_validade,req.body.quantidade_atual);
+            ok = await lote.cadastrarLote();
+        }
+        else{
+            ok = false;
+        }
+
+        res.send({ ok: ok })
     }
         
 

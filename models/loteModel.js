@@ -1,6 +1,6 @@
 const Database = require("../db/database");
 const ProdutoModel = require("./produtoModel");
-
+const banco = new Database()
 class loteModel {
     #id_lote;
     #id_produto;
@@ -71,20 +71,34 @@ class loteModel {
         return this.#nome;
     }
 
-    async cadastrarLote()
-    {
+   async cadastrarLote() {
 
-        let sql = 'insert into tb_lote (id_produto,numero_lote,data_validade,quantidade_atual) values (?,?,?,?)'
-        let valores = [this.#id_produto,this.#numero_lote,this.#data_validade,this.#quantidade_atual];
-        let banco = new Database();
-        let result = await banco.ExecutaComando(sql,valores);
+    if (this.#id_lote == 0) {
+        let sql = `insert into tb_lote (id_produto, numero_lote, data_validade, quantidade_atual)
+                   values (?, ?,?, ?)`;
+
+        let valores = [this.#id_produto, this.#numero_lote, this.#data_validade, this.#quantidade_atual];
+
+        let result = await banco.ExecutaComandoNonQuery(sql, valores);
+
         return result;
+    }
+    else {
+        // a quantidade_atual não é alterada aqui: o estoque só muda por movimentação
+        let sql = `update tb_lote
+                   set id_produto = ?, numero_lote = ?, data_validade = ?
+                   where id_lote = ?`;
 
-    } 
+        let valores = [this.#id_produto, this.#numero_lote, this.#data_validade, this.#id_lote];
+
+        let result = await banco.ExecutaComandoNonQuery(sql, valores);
+
+        return result;
+    }
+}
     async listarLotes()
     {
         let sql = 'SELECT p.nome, l.* FROM tb_lote l INNER JOIN tb_produto p ON p.id_produto = l.id_produto';
-        let banco = new Database()
         let rows = await banco.ExecutaComando(sql);
         let lista = [];
 
@@ -93,6 +107,29 @@ class loteModel {
         }
         return lista;
     }
+  async obter(id) {
+    let sql = `select id_lote, id_produto, numero_lote,
+                      data_validade,
+                      DATE_FORMAT(data_validade, '%d/%m/%Y') as validade_br,
+                      quantidade_atual
+               from tb_lote
+               where id_lote = ?`;
+
+    let valores = [id];
+
+    let rows = await banco.ExecutaComando(sql, valores);
+
+    if(rows.length > 0) {
+        let row = rows[0];
+        let lote = new loteModel(row["id_lote"], row["id_produto"], row["numero_lote"], row["data_validade"], row["quantidade_atual"]);
+        lote.validade_br = row["validade_br"];   // dd/mm/aaaa direto do banco, sem passar pelo construtor
+        return lote;
+    }
+
+    return null;
+}
+
+
 
 
 }
