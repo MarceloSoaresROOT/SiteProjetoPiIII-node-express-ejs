@@ -1,4 +1,5 @@
 const Database = require("../db/database");
+const ProdutoModel = require("./produtoModel");
 
 class loteModel {
     #id_lote;
@@ -92,9 +93,6 @@ class loteModel {
         }
         return lista;
     }
-
-
-
 
 
 }

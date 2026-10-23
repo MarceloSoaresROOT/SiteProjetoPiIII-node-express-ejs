@@ -257,12 +257,18 @@
       <div class="modal-body">
         <input type="hidden" id="idEdicao">
         <div class="row g-3">
-          <!-- <div class="col-md-12">
+          <div class="col-md-12">
             <label for="novoProduto" class="form-label">Produto *</label>
-            <select class="form-select" id="novoProduto"><option value="">Carregando...</option></select>
+            <select class="form-select" id="novoProduto">
+             <option value="0">--Selecione--</option>
+              <% for(let i = 0; i<produtos.length; i++) { %>
+                    <option value="<%=produtos[i].id_lote%>"><%= produtos[i].nome %></option>
+                <%} %>                
+            
+            </select>
             <div class="invalid-feedback">Selecione o produto.</div>
             <div class="form-text">Não encontrou? <a href="/produtos">Cadastrar produto</a></div>
-          </div> -->
+          </div>
           <div class="col-md-4">
             <label for="novoNumeroLote" class="form-label">Número do lote *</label>
             <input type="text" class="form-control" id="novoNumeroLote" placeholder="Ex: L2026-001" maxlength="50">

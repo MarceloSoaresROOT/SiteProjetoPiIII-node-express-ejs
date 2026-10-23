@@ -1,4 +1,5 @@
 const loteModel = require("../models/loteModel");
+const ProdutoModel = require("../models/produtoModel");
 
 class loteController
 {
@@ -11,7 +12,11 @@ class loteController
 
         const dataFormatada = `${ano}-${mes}-${dia}`;
         let lotes = await lote.listarLotes()
-        res.render('lotes/lote',{lotes,dataFormatada});
+
+        let produto = new ProdutoModel();
+        let produtos = await produto.listarProduto()
+
+        res.render('lotes/lote',{lotes,dataFormatada,produtos});
     }
 
     async cadastroLote(req,resp)
@@ -42,6 +47,16 @@ class loteController
             });
         }
         }
+        async alterarLoteView(req, res){
+        let produto = new ProdutoModel();
+        let lote = new loteModel();
+        let produtos = await produto.listarProduto()
+        if(req.params.id != undefined && req.params.id != ""){
+            lote = await lote.obter(req.params.id);
+        }
+        res.render("lotes/lote", {produtos, lote});
+    }
+        
 
     }
 
