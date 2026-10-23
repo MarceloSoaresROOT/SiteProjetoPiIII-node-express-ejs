@@ -5,18 +5,22 @@ class loteController
      async listarLotesView(req, res) {
         let lote = new loteModel();
         const dataAtual = new Date();
-        const dataFormatada = dataAtual.toISOString().split('T')[0]; 
+        const ano = dataAtual.getFullYear();
+        const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+        const dia = String(dataAtual.getDate()).padStart(2, '0');
+
+        const dataFormatada = `${ano}-${mes}-${dia}`;
         let lotes = await lote.listarLotes()
         res.render('lotes/lote',{lotes,dataFormatada});
     }
 
-    async cadastroLote()
+    async cadastroLote(req,resp)
     {
-        if( req.body.lote !="" && req.body.data !="" && req.body.qnt>0)
+        if(req.body.lote !="" && req.body.data !="" && req.body.qnt>0)
         {
             let lote = new loteModel(0,1,req.body.lote,req.body.data,req.body.qnt)
-            let result = await lote.cadastrar();
-            
+            let result = await lote.cadastrarLote()
+            console.log(lote)
             if(result) {
                 resp.send({
                     ok: true,

@@ -1,12 +1,13 @@
 document.addEventListener("DOMContentLoaded",function(){
 console.log("entrou")
+
    let btnlote = document.querySelector('#btnSalvarLote');
 
     btnlote.addEventListener("click",gravar)
 
     function gravar()
     {
-        let produto = document.querySelector('#novoProduto').value;
+        // let produto = document.querySelector('#novoProduto').value;
         let lote  = document.querySelector('#novoNumeroLote').value;
         let data = document.querySelector('#novaValidade').value;
         let qnt = document.querySelector('#novaQuantidade').value;
@@ -14,7 +15,7 @@ console.log("entrou")
         
             let obj= 
             {
-            produto: produto,
+            // produto: produto,
             lote: lote,
             data: data,
             qnt: qnt
@@ -29,13 +30,18 @@ console.log("entrou")
                 }
             })
             .then(r=> {
+                console.log(r.json())
                 return r.json();
+
             })
             .then(r=> {
+                
                 if(r.ok) {
+                    console.log(r.ok)
                     window.location.href="/lotes";
                 }   
                 else {
+                    console.log(r.ok)
                     alert(r.msg);
                 }
             })

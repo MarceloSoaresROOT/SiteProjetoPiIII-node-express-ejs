@@ -73,7 +73,7 @@ class loteModel {
     async cadastrarLote()
     {
 
-        let sql = 'insert into tb_lote (id_produto,numero_lote,data_validade,quantidade_atual) values ?,?,?,?,?)'
+        let sql = 'insert into tb_lote (id_produto,numero_lote,data_validade,quantidade_atual) values (?,?,?,?)'
         let valores = [this.#id_produto,this.#numero_lote,this.#data_validade,this.#quantidade_atual];
         let banco = new Database();
         let result = await banco.ExecutaComando(sql,valores);
