@@ -11,4 +11,6 @@ router.post('/cadastrar',controller.cadastroLote)
 // router.post("/excluir", ctrl.excluirProduto);
 router.get("/alterar/:id", controller.alterarLoteView);
 router.post("/alterar", controller.alterarLote);
+router.post("/excluir", controller.deletar);
+
 module.exports = router;

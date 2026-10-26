@@ -1,0 +1,264 @@
+ <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenGo - <%= produtoAlter ? 'Editar produto' : 'Adicionar produto' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body { background: #f6f8f5; }
+    .modal-content { border: 0; border-radius: 18px; }
+
+    /* Bloco da imagem do produto */
+    .bloco-imagem {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 16px;
+      background: #f4fff7;
+      border: 1px dashed #cfead8;
+      border-radius: 16px;
+    }
+    .imagem-previa {
+      width: 150px;
+      height: 150px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 1px solid #e7efe8;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(20, 83, 45, 0.08);
+    }
+    .imagem-previa img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .legenda-imagem {
+      text-align: center;
+      font-size: .8rem;
+      color: #6c757d;
+      margin-top: 6px;
+    }
+    @media (max-width: 575.98px) {
+      .bloco-imagem { flex-direction: column; text-align: center; }
+      .bloco-imagem .campo-imagem { width: 100%; text-align: left; }
+    }
+  </style>
+  </head>
+  <body>
+<div class="modal fade" id="modalAdicionar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-success fw-bold" id="tituloModal">
+                    <i class="bi <%= produtoAlter ? 'bi-pencil-square' : 'bi-plus-circle' %> me-1"></i>
+                    <span id="textoTituloModal"><%= produtoAlter ? 'Editar produto' : 'Adicionar produto' %></span>
+                </h5>
+
+                <button type="button" class="btn-close"
+                    data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="idEdicao"
+                    value="<%= produtoAlter ? produtoAlter.id_produto : '' %>">
+
+                <div class="row g-3">
+
+                    <!-- Nome -->
+                    <div class="col-md-6">
+                        <label for="novoNome" class="form-label">Produto *</label>
+                        <input
+                            type="text"
+                            value="<%= produtoAlter ? produtoAlter.nome : '' %>"
+                            class="form-control"
+                            id="novoNome"
+                            placeholder="Ex: Abacaxi"
+                            maxlength="150">
+
+                        <div class="invalid-feedback">
+                            Informe o nome do produto.
+                        </div>
+                    </div>
+
+                    <!-- Categoria -->
+                    <div class="col-md-6">
+                        <label for="novaCategoria" class="form-label">Categoria *</label>
+
+                        <select class="form-select" id="novaCategoria">
+                            <option value="0">Selecione...</option>
+
+                            <% for (let i = 0; i < listaCategorias.length; i++) { %>
+                                <option
+                                    value="<%= listaCategorias[i].id_categoria %>"
+                                    <%= produtoAlter && listaCategorias[i].id_categoria == produtoAlter.id_categoria ? "selected" : "" %>>
+                                    <%= listaCategorias[i].nome %>
+                                </option>
+                            <% } %>
+                        </select>
+
+                        <div class="invalid-feedback">Selecione a categoria.</div>
+                        <div class="form-text">
+                            Não encontrou? <a href="/categorias">Cadastrar categoria</a>
+                        </div>
+                    </div>
+
+                    <!-- Marca -->
+                    <div class="col-md-6">
+                        <label for="novaMarca" class="form-label">Marca *</label>
+
+                        <select class="form-select" id="novaMarca">
+                            <option value="0">Selecione...</option>
+
+                            <% for (let i = 0; i < listaMarcas.length; i++) { %>
+                                <option
+                                    value="<%= listaMarcas[i].id_marca %>"
+                                    <%= produtoAlter && listaMarcas[i].id_marca == produtoAlter.id_marca ? "selected" : "" %>>
+                                    <%= listaMarcas[i].nome %>
+                                </option>
+                            <% } %>
+                        </select>
+
+                        <div class="invalid-feedback">Selecione a marca.</div>
+                        <div class="form-text">
+                            Não encontrou? <a href="/marcas">Cadastrar marca</a>
+                        </div>
+                    </div>
+
+                    <!-- Preço -->
+                    <div class="col-md-3">
+                        <label for="novoPreco" class="form-label">Preço *</label>
+
+                        <input
+                            type="number"
+                            value="<%= produtoAlter ? produtoAlter.preco : '' %>"
+                            class="form-control"
+                            id="novoPreco"
+                            placeholder="Ex: 4.99"
+                            min="0.01"
+                            step="0.01">
+
+                        <div class="invalid-feedback">
+                            Informe um preço maior que zero.
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-3">
+                        <label for="novoAtivo" class="form-label">Status *</label>
+
+                        <select class="form-select" id="novoAtivo">
+                            <option value="S"
+                                <%= !produtoAlter || produtoAlter.ativo == "S" ? "selected" : "" %>>
+                                Ativo
+                            </option>
+
+                            <option value="N"
+                                <%= produtoAlter && produtoAlter.ativo == "N" ? "selected" : "" %>>
+                                Inativo
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="col-12">
+                        <label for="novaDescricao" class="form-label">Descrição</label>
+
+                        <textarea
+                            class="form-control"
+                            id="novaDescricao"
+                            rows="2"
+                            maxlength="500"
+                            placeholder="Ex: Abacaxi pérola fresco e saboroso."><%= produtoAlter ? produtoAlter.descricao : '' %></textarea>
+                    </div>
+
+                    <!-- Imagem -->
+                    <div class="col-12">
+                        <label class="form-label">Imagem do produto</label>
+
+                        <div class="bloco-imagem">
+
+                            <div>
+                                <div class="imagem-previa" id="divPrevia">
+                                    <img
+                                        id="previaImagem"
+                                        src="<%= produtoAlter && produtoAlter.produtoImagem ? produtoAlter.produtoImagem : '/imagens-produtos/produto-sem-imagem.webp' %>"
+                                        alt="Imagem do produto">
+                                </div>
+                                <div class="legenda-imagem">
+                                    <%= produtoAlter && produtoAlter.produtoImagem ? 'Imagem atual' : 'Sem imagem' %>
+                                </div>
+                            </div>
+
+                            <div class="campo-imagem flex-grow-1">
+                                <label for="inputImagem" class="form-label mb-1">
+                                    <i class="bi bi-image me-1 text-success"></i>
+                                    Nova imagem do produto
+                                </label>
+                                <input
+                                    class="form-control"
+                                    type="file"
+                                    id="inputImagem"
+                                    name="imagem"
+                                    accept="image/*">
+                                <div class="form-text">
+                                    JPG, PNG ou WEBP. Deixe em branco para manter a imagem atual.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Mensagem de erro -->
+                <div class="alert alert-danger d-none mt-3 mb-0"
+                    id="erroAdicionarProduto">
+                    Preencha corretamente os campos obrigatórios.
+                </div>
+
+            </div>
+
+            <div class="modal-footer border-0">
+                <button
+                    type="button"
+                    class="btn btn-light border rounded-pill px-4"
+                    data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-success rounded-pill px-4"
+                    id="btnSalvarProduto">
+
+                    <i class="bi bi-check-circle me-1"></i>
+                    <span id="textoBtnSalvar"><%= produtoAlter ? 'Salvar alterações' : 'Adicionar' %></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+  <script src="/js/produto/alterar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Abre o modal assim que a página carrega e volta para a listagem ao fechar
+    var modalProduto = document.getElementById('modalAdicionar');
+    new bootstrap.Modal(modalProduto).show();
+    modalProduto.addEventListener('hidden.bs.modal', function () {
+      window.location.href = '/produtos';
+    });
+  </script>
+
+  </body>
+  </html>

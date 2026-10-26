@@ -14,7 +14,7 @@ class loteController
         let lotes = await lote.listarLotes()
 
         let produto = new ProdutoModel();
-        let produtos = await produto.listarProduto()
+        let produtos = await produto.listarProdutos()
 
         res.render('lotes/lote',{lotes,dataFormatada,produtos});
     }
@@ -59,6 +59,9 @@ class loteController
     }
         async alterarLote(req, res) {
         var ok = true;
+        console.log(req.body.numero_lote)
+        console.log(req.body.data_validade);
+        console.log(req.body.quantidade_atual);
         if(req.body.id_lote != "" && req.body.id_produto != "" && req.body.numero_lote != ""  && req.body.data_validade != "" && req.body.quantidade_atual>0) {
 
             let lote = new loteModel(req.body.id_lote,req.body.id_produto,req.body.numero_lote,req.body.data_validade,req.body.quantidade_atual);
@@ -67,8 +70,23 @@ class loteController
         else{
             ok = false;
         }
-
+        console.log(ok)
         res.send({ ok: ok })
+    }
+    async deletar(req, res) {
+        if(req.body.id != null) {
+            let lote = new loteModel();
+            let ok = await lote.excluir(req.body.id);
+            if(ok) {
+                res.send({ok: true});
+            }
+            else{
+                res.send({ok: false, msg: "Erro ao excluir lote"})
+            }
+        }
+        else{
+            res.send({ok: false, msg: "O id para exclusão não foi enviado"})
+        }
     }
         
 

@@ -33,7 +33,6 @@ console.log("entrou")
                 }
             })
             .then(r=> {
-                console.log(r.json())
                 return r.json();
 
             })
@@ -41,7 +40,7 @@ console.log("entrou")
                 
                 if(r.ok) {
                     console.log(r.ok)
-                    window.location.href="/lotes";
+                    window.location.reload();
                 }   
                 else {
                     console.log(r.ok)

@@ -107,31 +107,42 @@ class loteModel {
         }
         return lista;
     }
-  async obter(id) {
-    let sql = `select id_lote, id_produto, numero_lote,
-                      data_validade,
-                      DATE_FORMAT(data_validade, '%d/%m/%Y') as validade_br,
-                      quantidade_atual
-               from tb_lote
-               where id_lote = ?`;
+  async obter(id) 
+    {
+        let sql = `select id_lote, id_produto, numero_lote,
+                        data_validade,
+                        DATE_FORMAT(data_validade, '%d/%m/%Y') as validade_br,
+                        quantidade_atual
+                from tb_lote
+                where id_lote = ?`;
 
-    let valores = [id];
+        let valores = [id];
 
-    let rows = await banco.ExecutaComando(sql, valores);
+        let rows = await banco.ExecutaComando(sql, valores);
 
-    if(rows.length > 0) {
-        let row = rows[0];
-        let lote = new loteModel(row["id_lote"], row["id_produto"], row["numero_lote"], row["data_validade"], row["quantidade_atual"]);
-        lote.validade_br = row["validade_br"];   // dd/mm/aaaa direto do banco, sem passar pelo construtor
-        return lote;
+        if(rows.length > 0) {
+            let row = rows[0];
+            let lote = new loteModel(row["id_lote"], row["id_produto"], row["numero_lote"], row["data_validade"], row["quantidade_atual"]);
+            lote.validade_br = row["validade_br"];   // dd/mm/aaaa direto do banco, sem passar pelo construtor
+            return lote;
+        }
+
+        return null;
     }
+  async excluir(id) 
+    {
+        let sql = "delete from tb_lote where id_lote = ?";
 
-    return null;
-}
+        let valores = [id];
+        
+        let result = await banco.ExecutaComandoNonQuery(sql, valores);
+
+        return result;
 
 
 
 
+    }
 }
 
 module.exports = loteModel;
