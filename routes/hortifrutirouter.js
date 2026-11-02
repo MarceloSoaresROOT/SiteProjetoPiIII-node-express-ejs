@@ -9,5 +9,4 @@ let controller = new Quitandacontroller();
 router.get('/', controller.rotaPrincipal);
 // rota gestao de produtos
 router.get('/gestao-produtos', controller.rotagestao_produtos);
-
 module.exports = router;

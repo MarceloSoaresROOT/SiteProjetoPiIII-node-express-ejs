@@ -4,17 +4,6 @@
 var carrinho = [];
 
 // Envia JSON para a API e devolve { ok, status, dados }
-function chamarApi(url, dados) {
-  return fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dados)
-  }).then(function (resp) {
-    return resp.json().catch(function () { return {}; }).then(function (corpo) {
-      return { ok: resp.ok, status: resp.status, dados: corpo };
-    });
-  });
-}
 
 function scrollToProducts() {
   document.getElementById('produtos').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -52,6 +41,7 @@ function abrirProdutoDetalhe(event, produtoElement) {
   var preco = produtoElement.getAttribute('data-preco') || produtoElement.querySelector('p').innerText.replace(/[R$\s\/kgun\.]/g, '').replace(',', '.');
   var descricao = produtoElement.getAttribute('data-descricao') || 'Produto fresco e saboroso.';
   var imagem = produtoElement.querySelector('img').getAttribute('src');
+  var estoque = produtoElement.getAttribute('data-estoque');
 
   document.getElementById('produtoDetalheNome').innerText = nome;
   document.getElementById('produtoDetalheDescricao').innerText = descricao;
@@ -62,13 +52,24 @@ function abrirProdutoDetalhe(event, produtoElement) {
 
   var quantidadeInput = document.getElementById('produtoDetalheQuantidade');
   quantidadeInput.value = 1;
-
+  
   var botaoAdicionar = document.getElementById('produtoDetalheAdicionar');
-  botaoAdicionar.onclick = function () {
+  var mensagem = document.getElementById('mensagem');
+  if(estoque<=0)
+  {
+    mensagem.textContent = "Esgotado"
+    botaoAdicionar.disabled = true;  
+    botaoAdicionar.hidden = true;  
+  }
+  else
+  {
+    botaoAdicionar.onclick = function () {
     adicionarAoCarrinho(nome, preco, parseInt(quantidadeInput.value, 10) || 1);
     var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProduto'));
     modal.hide();
   };
+  }
+  
 
   var modal = new bootstrap.Modal(document.getElementById('modalProduto'));
   modal.show();

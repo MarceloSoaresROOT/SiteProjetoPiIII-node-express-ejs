@@ -50,7 +50,7 @@ class loteController
         async alterarLoteView(req, res){
         let produto = new ProdutoModel();
         let lote = new loteModel();
-        let produtos = await produto.listarProduto()
+        let produtos = await produto.listarProdutos()
         if(req.params.id != undefined && req.params.id != ""){
             lote = await lote.obter(req.params.id);
         }
