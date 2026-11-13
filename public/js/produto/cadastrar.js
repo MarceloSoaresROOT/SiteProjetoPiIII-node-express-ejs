@@ -28,6 +28,7 @@ function gravarProduto() {
     var selMarca = document.getElementById("novaMarca");
     var inputValor = document.getElementById("novoPreco");
     var selAtivo = document.getElementById("novoAtivo");
+    var qnt = document.getElementById("novoQuantidade")
     var inputDescricao = document.getElementById("novaDescricao");
     var inputImagem = document.getElementById("novaImagem");
     var divErro = document.getElementById("erroAdicionarProduto");
@@ -40,7 +41,7 @@ console.log("Marca:", selMarca.value, selMarca.value > 0);
 console.log("Categoria:", selCategoria.value, selCategoria.value > 0);
 console.log("Imagem:", inputImagem.files.length, inputImagem.files.length > 0);
 
-    if (inputValor.value > 0 && inputNome.value != "" && inputDescricao.value !="" && selAtivo.value!="" && selMarca.value >0 && selCategoria.value >0 && inputImagem.files.length > 0) {
+    if (inputValor.value > 0 && inputNome.value != "" && inputDescricao.value !="" && selAtivo.value!="" && selMarca.value >0 && selCategoria.value >0 && inputImagem.files.length > 0 && qnt.value!="") {
 
         divErro.classList.add("d-none");
 
@@ -51,6 +52,7 @@ console.log("Imagem:", inputImagem.files.length, inputImagem.files.length > 0);
         formData.append("id_marca", selMarca.value);
         formData.append("id_categoria", selCategoria.value);
         formData.append("ativo", selAtivo.value);
+        formData.append("qnt", qnt.value);
         formData.append("imagem", inputImagem.files[0]);
 
         fetch('/produtos/cadastro', {

@@ -151,6 +151,22 @@
                             Informe um preço maior que zero.
                         </div>
                     </div>
+                        <div class="col-md-3">
+                        <label for="novoQuantidade" class="form-label">Quantidade *</label>
+
+                        <input
+                            type="number"
+                            value="<%= produtoAlter ? produtoAlter.qnt : '' %>"
+                            class="form-control"
+                            id="novaQuantidade"
+                            placeholder="Ex: 1"
+                            min="0.01"
+                            step="0.01">
+
+                        <div class="invalid-feedback">
+                            Informe uma quantidade maior que zero.
+                        </div>
+                    </div>
 
                     <!-- Status -->
                     <div class="col-md-3">

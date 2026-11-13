@@ -11,6 +11,7 @@ class ProdutoModel {
     #id_categoria;
     #ativo;
     #produtoImagem;
+    #qnt;
     #nome_marca;
     #nome_categoria;
 
@@ -51,6 +52,15 @@ class ProdutoModel {
     get produtoImagem() { return this.#produtoImagem; }
     set produtoImagem(produtoImagem) { this.#produtoImagem = produtoImagem; }
 
+    get qnt()
+    {
+        return this.#qnt
+    }
+    set qnt(qnt)
+    {
+        this.#qnt = qnt
+    }
+
     get nome_marca() { return this.#nome_marca; }
     set nome_marca(nome_marca) { this.#nome_marca = nome_marca; }
 
@@ -67,34 +77,36 @@ class ProdutoModel {
     async gravar() {
         if (this.#id_produto == 0) {
             let sql = `insert into tb_produto
-                (nome, descricao, preco, id_marca, id_categoria, ativo, prd_imagem)
-                values (?, ?, ?, ?, ?, ?, ?)`;
+                (nome, descricao, preco,prd_imagem, ativo, qnt,id_marca,id_categoria)
+                values (?, ?, ?, ?, ?, ?, ?,?)`;
 
             let valores = [
                 this.#nome,
                 this.#descricao,
                 this.#preco,
+                this.#produtoImagem,
+                this.#ativo,
+                this.#qnt,
                 this.#id_marca,
                 this.#id_categoria,
-                this.#ativo,
-                this.#produtoImagem
             ];
 
             return await conexao.ExecutaComandoNonQuery(sql, valores);
         } else {
             let sql = `update tb_produto set
-                nome = ?, descricao = ?, preco = ?, id_marca = ?,
-                id_categoria = ?, ativo = ?, prd_imagem = ?
+                nome = ?, descricao = ?, preco = ?,prd_imagem = ?, ativo = ?, qnt =?, id_marca = ?,
+                id_categoria = ? 
                 where id_produto = ?`;
 
             let valores = [
                 this.#nome,
                 this.#descricao,
                 this.#preco,
-                this.#id_marca,
-                this.#id_categoria,
-                this.#ativo,
                 this.#produtoImagem,
+                this.#ativo,
+                this.#qnt,
+                 this.#id_marca,
+                this.#id_categoria,
                 this.#id_produto
             ];
 
@@ -119,7 +131,8 @@ class ProdutoModel {
                 row["preco"],
                 row["id_marca"],
                 row["id_categoria"],
-                row["ativo"]
+                row["ativo"],
+                row["qnt"]
             );
 
             if (row["prd_imagem"] != null) {
@@ -135,7 +148,7 @@ class ProdutoModel {
     }
 
     async listarProdutos() {
-        let sql = `select p.*, m.nome as nome_marca, c.nome as nome_categoria
+        let sql = `select p.*, m.nome as nome_marca, c.descricao as nome_categoria
                    from tb_produto p
                    inner join tb_categoria c on p.id_categoria = c.id_categoria
                    inner join tb_marca m on p.id_marca = m.id_marca
@@ -156,13 +169,13 @@ class ProdutoModel {
 
             listaRetorno.push(new ProdutoModel(
                 row["id_produto"],
-                row["nome"],
                 row["descricao"],
                 row["preco"],
                 row["id_marca"],
                 row["id_categoria"],
-                row["ativo"],
                 imagemBase64,
+                row["ativo"],
+                row["qnt"],
                 row["nome_marca"],
                 row["nome_categoria"]
             ));
@@ -170,6 +183,76 @@ class ProdutoModel {
 
         return listaRetorno;
     }   
+
+    async vitrine() {
+
+    let sql = `
+        SELECT
+            p.id_produto,
+            p.nome,
+            p.descricao,
+            p.preco,
+            p.prd_imagem,
+            p.qnt,
+            c.descricao AS categoria,
+            m.nome AS marca,
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN l.data_validade >= CURDATE()
+                        THEN l.quantidade_atual
+                        ELSE 0
+                    END
+                ), 0
+            ) AS quantidade_atual
+        FROM tb_produto p
+        INNER JOIN tb_categoria c
+            ON c.id_categoria = p.id_categoria
+        INNER JOIN tb_marca m
+            ON m.id_marca = p.id_marca
+        LEFT JOIN tb_lote l
+            ON l.id_produto = p.id_produto
+        WHERE p.ativo = 'S'
+        GROUP BY
+            p.id_produto,
+            p.nome,
+            p.descricao,
+            p.preco,
+            p.prd_imagem,
+            p.qnt,
+            c.descricao,
+            m.nome
+        ORDER BY p.nome
+    `;
+
+    let rows = await conexao.ExecutaComando(sql);
+
+    let lista = [];
+
+    for (let i = 0; i < rows.length; i++) {
+
+        let imagemBase64 = "";
+
+        if (rows[i]["prd_imagem"] != null) {
+            imagemBase64 =
+                "data:image/png;base64," +
+                rows[i]["prd_imagem"].toString("base64");
+        }
+
+        lista.push({
+            id_produto: rows[i]["id_produto"],
+            nome: rows[i]["nome"],
+            descricao: rows[i]["descricao"],
+            preco: Number(rows[i]["preco"]),
+            produtoImagem: imagemBase64,
+            categoria: rows[i]["categoria"],
+            marca: rows[i]["marca"],
+            qnt: Number(rows[i]["qnt"]),
+        });
+    }
+
+    return lista;
+}
 }
 
 module.exports = ProdutoModel;

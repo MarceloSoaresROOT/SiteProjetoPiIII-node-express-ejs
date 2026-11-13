@@ -8,12 +8,6 @@ class loteModel {
     #numero_lote;
     #data_validade;
     #quantidade_atual;
-    #nome;
-    #categoria;
-    #marca;
-    #descricao;
-    #preco;
-    #produtoImagem;
 
     constructor(
         id_lote,
@@ -21,24 +15,14 @@ class loteModel {
         numero_lote,
         data_validade,
         quantidade_atual,
-        nome,
-        categoria,
-        marca,
-        descricao,
-        preco,
-        produtoImagem=""
+
     ) {
         this.#id_lote = id_lote;
         this.#id_produto = id_produto;
         this.#numero_lote = numero_lote;
         this.#data_validade = data_validade;
         this.#quantidade_atual = quantidade_atual;
-        this.#nome = nome;
-        this.#categoria = categoria;
-        this.#marca = marca;
-        this.#descricao = descricao;
-        this.#preco = preco;
-        this.#produtoImagem = produtoImagem;
+       
     }
 
     // ID do lote
@@ -86,53 +70,7 @@ class loteModel {
         return this.#quantidade_atual;
     }
 
-    // Nome do produto
-    set nome(valor) {
-        this.#nome = valor;
-    }
-
-    get nome() {
-        return this.#nome;
-    }
-
-    // Categoria
-    set categoria(valor) {
-        this.#categoria = valor;
-    }
-
-    get categoria() {
-        return this.#categoria;
-    }
-
-    // Marca
-    set marca(valor) {
-        this.#marca = valor;
-    }
-
-    get marca() {
-        return this.#marca;
-    }
-
-    // Descrição do produto
-    set descricao(valor) {
-        this.#descricao = valor;
-    }
-
-    get descricao() {
-        return this.#descricao;
-    }
-
-    // Preço do produto
-    set preco(valor) {
-        this.#preco = valor;
-    }
-
-    get preco() {
-        return this.#preco;
-    }
-    get produtoImagem() { return this.#produtoImagem; }
-    set produtoImagem(produtoImagem) { this.#produtoImagem = produtoImagem; }
-
+  
     async cadastrarLote() {
 
         if (this.#id_lote == 0) {

@@ -30,6 +30,8 @@ function alterarProduto() {
     var selMarca = document.getElementById("novaMarca");
     var inputValor = document.getElementById("novoPreco");
     var selAtivo = document.getElementById("novoAtivo");
+    var qnt = document.getElementById("novoQuantidade")
+    
     var inputDescricao = document.getElementById("novaDescricao");
     var inputImagem = document.getElementById("inputImagem");
     if (inputValor.value > 0 && inputNome.value != "" && inputDescricao.value !="" && selAtivo.value!="" && selMarca.value >0 && selCategoria.value >0 && inputImagem.files.length > 0) {
@@ -43,6 +45,7 @@ function alterarProduto() {
         formData.append("id_marca", selMarca.value);
         formData.append("id_categoria", selCategoria.value);
         formData.append("ativo", selAtivo.value);
+        formData.append("qnt", qnt.value);
         formData.append("imagem", inputImagem.files[0]);
 
         fetch("/produtos/alterar", {

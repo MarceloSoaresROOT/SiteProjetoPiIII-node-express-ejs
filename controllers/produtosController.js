@@ -6,7 +6,7 @@ const fs = require("fs");
 
 class ProdutoController {
 
-    async listarView(req, res) {
+        async listarView(req, res) {
         let prod = new ProdutoModel();
         let lista = await prod.listarProdutos() ;
          let listaMarcas = [];
@@ -43,7 +43,7 @@ class ProdutoController {
             req.body.id_marca != "" && req.body.id_marca != "0" &&
             req.body.descricao !="" && req.body.ativo !="" &&
             req.body.id_categoria != "" && req.body.id_categoria != "0" &&
-            req.file != null) {
+            req.file != null && req.body.qnt !="") {
 
             let produto = new ProdutoModel(
                 0,
@@ -53,6 +53,7 @@ class ProdutoController {
                 req.body.id_marca,
                 req.body.id_categoria,
                 req.body.ativo,
+                req.body.qnt,
                 req.file.buffer
             );
 
@@ -89,7 +90,7 @@ class ProdutoController {
            if (req.body.preco > 0 &&
             req.body.nome != "" && 
             req.body.id_marca != "" && req.body.id_marca != "0" &&
-            req.body.descricao !="" && req.body.ativo !="" &&
+            req.body.descricao !="" && req.body.ativo !="" && req.body.qnt !="" &&
             req.body.id_categoria != "" && req.body.id_categoria != "0" &&
             req.file != null) {
 
@@ -101,6 +102,7 @@ class ProdutoController {
                 req.body.id_marca,
                 req.body.id_categoria,
                 req.body.ativo,
+                req.body.qnt,
                 req.file.buffer
             );
 

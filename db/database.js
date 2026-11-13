@@ -10,9 +10,9 @@ class Database {
 
         this.#conexao = mysql.createPool({
             host: '132.226.245.178', //endereço do nosso banco de dados na nuvem
-            database: 'PFS1_10442521513', //a database de cada um de vocês possui a nomenclatura PFS2_(RA)
-            user: '10442521513', // usuario e senha de cada um de vocês é o RA
-            password: '10442521513',
+            database: 'PFS1_10442521970', //a database de cada um de vocês possui a nomenclatura PFS2_(RA)
+            user: '10442521970', // usuario e senha de cada um de vocês é o RA
+            password: '10442521970',
             idleTimeout: 30000,
             connectionLimit: 50
         });

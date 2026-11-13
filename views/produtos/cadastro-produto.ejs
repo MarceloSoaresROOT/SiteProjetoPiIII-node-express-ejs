@@ -194,6 +194,7 @@
                 <th>Produto</th>
                 <th>Descrição</th>
                 <th>Preço</th>
+                <th>Quantidade</th>
                 <th>Marca</th>
                 <th>Categoria</th>
                 <th>Status</th>
@@ -214,6 +215,7 @@
         <td><%= value.nome %></td>
         <td><%= value.descricao %></td>
         <td>R$ <%= Number(value.preco).toFixed(2).replace('.', ',') %></td>
+        <td><%= value.qnt %></td>
         <td><span class="badge badge-categoria"><%= value.nome_marca %></span></td>
         <td><span class="badge badge-categoria"><%= value.nome_categoria %></span></td>      <td>
           <% if (value.ativo == 'S') { %>
@@ -264,7 +266,7 @@
               <select class="form-select" id="novaCategoria">
                 <option value="0">Selecione...</option>
                 <% for(i=0;i<listaCategorias.length;i++){%>
-                  <option value="<%=listaCategorias[i].id_categoria %>"><%=listaCategorias[i].nome%></option>
+                  <option value="<%=listaCategorias[i].id_categoria %>"><%=listaCategorias[i].descricao%></option>
                 <%}%>        
               </select>
               <div class="invalid-feedback">Selecione a categoria.</div>
@@ -295,6 +297,11 @@
                 <option value="S" selected>Ativo</option>
                 <option value="N">Inativo</option>
               </select>
+            </div>
+             <div class="col-md-3">
+              <label for="novoQuantidade" class="form-label">Quantidade *</label>
+              <input type="number" class="form-control" id="novoQuantidade" placeholder="Ex: 1" min="0.01" step="0.01">
+              <div class="invalid-feedback">Informe uma quantidade maior que zero.</div>
             </div>
 
             <div class="col-12">
