@@ -150,7 +150,7 @@
           <p class="text-muted small mb-1"><%= lista[i].marca %></p>
           <p>R$ <%= Number(lista[i].preco).toFixed(2).replace('.', ',') %></p>
 
-          <% if (Number(lista[i].quantidade_atual) <= 0) { %>
+          <% if (Number(lista[i].qnt) <= 0) { %>
 
     <span class="badge text-bg-secondary">Esgotado</span>
 

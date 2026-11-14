@@ -50,11 +50,11 @@ class ProdutoController {
                 req.body.nome,
                 req.body.descricao,
                 req.body.preco,
-                req.body.id_marca,
-                req.body.id_categoria,
+                req.file.buffer,
                 req.body.ativo,
                 req.body.qnt,
-                req.file.buffer
+                req.body.id_marca,
+                req.body.id_categoria,
             );
 
             ok = await produto.gravar();
@@ -99,11 +99,12 @@ class ProdutoController {
                 req.body.nome,
                 req.body.descricao,
                 req.body.preco,
-                req.body.id_marca,
-                req.body.id_categoria,
+                req.file.buffer,
                 req.body.ativo,
                 req.body.qnt,
-                req.file.buffer
+                req.body.id_marca,
+                req.body.id_categoria,
+               
             );
 
             ok = await produto.gravar();
