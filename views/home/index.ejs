@@ -141,7 +141,7 @@
              data-categoria="<%= String(lista[i].categoria || '').toLowerCase() %>"
              data-preco="<%= Number(lista[i].preco).toFixed(2) %>"
              data-descricao="<%= lista[i].descricao || 'Produto fresco e saboroso.' %>"
-             data-estoque="<%= lista[i].quantidade_atual %>"
+             data-estoque="<%= lista[i].qnt %>"
              onclick="abrirProdutoDetalhe(event, this)"
              role="button">
           

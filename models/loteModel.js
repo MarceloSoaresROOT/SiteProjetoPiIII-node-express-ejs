@@ -8,13 +8,14 @@ class loteModel {
     #numero_lote;
     #data_validade;
     #quantidade_atual;
-
+    #nome
     constructor(
         id_lote,
         id_produto,
         numero_lote,
         data_validade,
         quantidade_atual,
+        nome
 
     ) {
         this.#id_lote = id_lote;
@@ -22,7 +23,7 @@ class loteModel {
         this.#numero_lote = numero_lote;
         this.#data_validade = data_validade;
         this.#quantidade_atual = quantidade_atual;
-       
+        this.#nome = nome
     }
 
     // ID do lote
@@ -68,6 +69,14 @@ class loteModel {
 
     get quantidade_atual() {
         return this.#quantidade_atual;
+    }
+    get nome()
+    {
+        return this.#nome
+    }
+    set nome(nome)
+    {
+        this.#nome = nome
     }
 
   
@@ -183,73 +192,7 @@ class loteModel {
     }
 
   
-async vitrine() {
 
-    let sql = `
-        SELECT
-            p.id_produto,
-            p.nome,
-            p.descricao,
-            p.preco,
-            p.prd_imagem,
-            c.nome AS categoria,
-            m.nome AS marca,
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN l.data_validade >= CURDATE()
-                        THEN l.quantidade_atual
-                        ELSE 0
-                    END
-                ), 0
-            ) AS quantidade_atual
-        FROM tb_produto p
-        INNER JOIN tb_categoria c
-            ON c.id_categoria = p.id_categoria
-        INNER JOIN tb_marca m
-            ON m.id_marca = p.id_marca
-        LEFT JOIN tb_lote l
-            ON l.id_produto = p.id_produto
-        WHERE p.ativo = 'S'
-        GROUP BY
-            p.id_produto,
-            p.nome,
-            p.descricao,
-            p.preco,
-            p.prd_imagem,
-            c.nome,
-            m.nome
-        ORDER BY p.nome
-    `;
-
-    let rows = await banco.ExecutaComando(sql);
-
-    let lista = [];
-
-    for (let i = 0; i < rows.length; i++) {
-
-        let imagemBase64 = "";
-
-        if (rows[i]["prd_imagem"] != null) {
-            imagemBase64 =
-                "data:image/png;base64," +
-                rows[i]["prd_imagem"].toString("base64");
-        }
-
-        lista.push({
-            id_produto: rows[i]["id_produto"],
-            nome: rows[i]["nome"],
-            descricao: rows[i]["descricao"],
-            preco: Number(rows[i]["preco"]),
-            produtoImagem: imagemBase64,
-            categoria: rows[i]["categoria"],
-            marca: rows[i]["marca"],
-            quantidade_atual: Number(rows[i]["quantidade_atual"])
-        });
-    }
-
-    return lista;
-}
 
 }
 

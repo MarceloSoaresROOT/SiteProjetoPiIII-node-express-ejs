@@ -180,71 +180,70 @@ class ProdutoModel {
         return listaRetorno;
     }   
 
-    async vitrine() {
-        let sql = `
-            SELECT
-                p.id_produto,
-                p.nome,
-                p.descricao,
-                p.preco,
-                p.prd_imagem,
-                c.descricao AS categoria,
-                m.nome AS marca,
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN l.data_validade >= CURDATE()
-                            THEN p.qnt
-                            ELSE 0
-                        END
-                    ), 0
-                ) AS qnt
-            FROM tb_produto p
-            INNER JOIN tb_categoria c
-                ON c.id_categoria = p.id_categoria
-            INNER JOIN tb_marca m
-                ON m.id_marca = p.id_marca
-            LEFT JOIN tb_lote l
-                ON l.id_produto = p.id_produto
-            WHERE p.ativo = 'S'
-            GROUP BY
-                p.id_produto,
-                p.nome,
-                p.descricao,
-                p.preco,
-                p.prd_imagem,
-                c.descricao,
-                m.nome
-            ORDER BY p.nome
-        `;
+   
+async vitrine() {
+    let sql = `
+        SELECT
+            p.id_produto,
+            p.nome,
+            p.descricao,
+            p.preco,
+            p.prd_imagem,
+            p.qnt,
+            c.descricao AS categoria,
+            m.nome AS marca
 
-        let rows = await conexao.ExecutaComando(sql);
+        FROM tb_produto p
 
-        let lista = [];
+        INNER JOIN tb_categoria c
+            ON c.id_categoria = p.id_categoria
 
-        for (let i = 0; i < rows.length; i++) {
-            let imagemBase64 = "";
+        INNER JOIN tb_marca m
+            ON m.id_marca = p.id_marca
 
-            if (rows[i]["prd_imagem"] != null) {
-                imagemBase64 =
-                    "data:image/png;base64," +
-                    rows[i]["prd_imagem"].toString("base64");
-            }
+        WHERE
+            p.ativo = 'S'
+            AND p.qnt > 0
 
-            lista.push({
-                id_produto: rows[i]["id_produto"],
-                nome: rows[i]["nome"],
-                descricao: rows[i]["descricao"],
-                preco: Number(rows[i]["preco"]),
-                produtoImagem: imagemBase64,
-                qnt: Number(rows[i]["qnt"]),
-                categoria: rows[i]["categoria"],
-                marca: rows[i]["marca"],
-            });
+            AND EXISTS (
+                SELECT 1
+                FROM tb_lote l
+                WHERE
+                    l.id_produto = p.id_produto
+                    AND l.data_validade >= CURDATE()
+            )
+
+        ORDER BY p.nome
+    `;
+
+    let rows = await conexao.ExecutaComando(sql);
+
+    let lista = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        let imagemBase64 = "";
+
+        if (rows[i]["prd_imagem"] != null) {
+            imagemBase64 =
+                "data:image/png;base64," +
+                rows[i]["prd_imagem"].toString("base64");
         }
 
-        return lista;
+        lista.push({
+            id_produto: rows[i]["id_produto"],
+            nome: rows[i]["nome"],
+            descricao: rows[i]["descricao"],
+            preco: Number(rows[i]["preco"]),
+            produtoImagem: imagemBase64,
+            qnt: Number(rows[i]["qnt"]),
+            categoria: rows[i]["categoria"],
+            marca: rows[i]["marca"],
+        });
     }
+
+    return lista;
+}
+
 }
 
 module.exports = ProdutoModel;
