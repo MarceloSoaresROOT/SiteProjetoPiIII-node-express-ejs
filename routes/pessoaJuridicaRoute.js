@@ -1,9 +1,9 @@
 const express = require('express');
-const fornecedorController = require('../controllers/fornecedorController');
+const pessoaJuridicaController = require('../controllers/pessoaJuridicaController');
 
 const router = express.Router();
 
-let controller = new fornecedorController();
+let controller = new pessoaJuridicaController();
 
 // rota cadastro de clientes
 router.get('/', controller.listarFornecedor);

@@ -405,6 +405,7 @@ CREATE TABLE IF NOT EXISTS `PFS1_10442521970`.`tb_item_pedido` (
   `id_lote` BIGINT NOT NULL,
   `itens_qntd` BIGINT NOT NULL,
   `itens_valor` DECIMAL(10,2) NOT NULL,
+  `itens_valorUnitario` DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (`id_pedido`, `id_produto`, `id_lote`),
   INDEX `fk_ip_prod` (`id_produto` ASC) VISIBLE,
   INDEX `fk_ip_lote` (`id_lote` ASC) VISIBLE,

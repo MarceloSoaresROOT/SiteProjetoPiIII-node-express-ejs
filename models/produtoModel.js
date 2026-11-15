@@ -69,6 +69,16 @@ class ProdutoModel {
         return await conexao.ExecutaComandoNonQuery(sql, valores);
     }
 
+    async atualizarEstoque(id,qnt)
+    {
+        let sql = "update tb_produto set qnt = qnt - ? where id_produto = ?";
+        let valores = [qnt, id];
+        let banco = new Database();
+        let result = await banco.ExecutaComandoNonQuery(sql, valores);
+
+        return result;
+    }
+
     async gravar() {
         if (this.#id_produto == 0) {
             let sql = `insert into tb_produto
@@ -209,7 +219,7 @@ async vitrine() {
                 SELECT 1
                 FROM tb_lote l
                 WHERE
-                    l.id_produto = p.id_produto
+                l.id_produto = p.id_produto
                     AND l.data_validade >= CURDATE()
             )
 
@@ -243,6 +253,24 @@ async vitrine() {
 
     return lista;
 }
+
+    async consultaEstoque(id,qnt)
+    {
+        let sql = "select id_produto from tb_produto where id_produto=? and qnt>=? "
+        let valores = [id,qnt];
+        let rows = await conexao.ExecutaComando(sql,valores);
+        return rows.length>0        
+
+    }
+
+   toJSON() {
+        return {
+            id: this.#id_produto,
+            nome: this.#nome,
+            preco: this.#preco,
+            imagem: this.#produtoImagem
+        }
+    }
 
 }
 

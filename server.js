@@ -16,14 +16,14 @@ app.use(express.json());
 // server.use("/api", require("./routes/apirouter"));
 app.use("/", require("./routes/hortifrutirouter"));
 app.use("/clientes", require("./routes/clientesRoute"));
-app.use("/fornecedores", require("./routes/fornecedorRoute"));
+app.use("/fornecedores", require("./routes/pessoaJuridicaRoute"));
 app.use("/produtos", require("./routes/produtosRoute"));
 app.use("/lotes", require("./routes/loteRoute"));
 app.use("/marcas", require("./routes/marcasRoute"));
 app.use("/categorias", require("./routes/categoriaRoute"));
 app.use("/categorias", require("./routes/categoriaRoute"));
-app.use("/funcionarios", require("./routes/funcionarioRoute"));
-
+app.use("/funcionarios", require("./routes/pessoaFisicaRoute"));
+app.use("/pedido",require("./routes/pedidoRoute"))
 
 
 

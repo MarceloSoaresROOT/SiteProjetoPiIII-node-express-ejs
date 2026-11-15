@@ -79,6 +79,47 @@ class loteModel {
         this.#nome = nome
     }
 
+    async somarLotes(id_produto) 
+    {
+
+    let sql = `SELECT SUM(quantidade_atual) AS total
+               FROM tb_lote
+               WHERE id_produto = ?
+               AND data_validade >= CURDATE()
+               AND quantidade_atual > 0`;
+
+    let rows = await banco.ExecutaComando(sql, [id_produto]);
+
+    return Number(rows[0].total || 0);
+    }
+
+    
+    async buscarLotes(id_produto,qnt) {
+
+    let sql = `SELECT id_lote, id_produto, data_validade, quantidade_atual
+               FROM tb_lote
+               WHERE id_produto = ?
+               AND data_validade >= CURDATE()
+               AND quantidade_atual >0
+               ORDER BY data_validade ASC`;
+
+    let valores = [id_produto,qnt];
+
+    let rows = await banco.ExecutaComando(sql, valores);
+
+    return rows;
+}
+        async atualizarLote(id_lote, quantidade) {
+
+    let sql = `UPDATE tb_lote
+               SET quantidade_atual = quantidade_atual - ?
+               WHERE id_lote = ?
+               AND quantidade_atual >= ?`;
+
+    let valores = [quantidade, id_lote, quantidade];
+
+    return await banco.ExecutaComando(sql, valores);
+    }   
   
     async cadastrarLote() {
 

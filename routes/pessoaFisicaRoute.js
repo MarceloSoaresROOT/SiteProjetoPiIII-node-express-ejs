@@ -1,9 +1,9 @@
 const express = require('express');
-const funcionariosController = require('../controllers/funcionariosController');
+const PessoaFisicaController = require('../controllers/pessoaFisicaController');
 
 const router = express.Router();
 
-let controller = new funcionariosController();
+let controller = new PessoaFisicaController();
 
 router.get('/', controller.listarFuncionario);
 

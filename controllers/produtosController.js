@@ -5,6 +5,16 @@ const ProdutoModel = require("../models/produtoModel");
 const fs = require("fs");
 
 class ProdutoController {
+    
+    async obterProduto(req, res) {
+        //recebe o id do produto através da rota;
+        let produtoId = req.params.produto;
+
+        let produto = new ProdutoModel();
+        produto = await produto.buscarProduto(produtoId);
+
+        res.send({produto: produto})
+    }
 
         async listarView(req, res) {
         let prod = new ProdutoModel();

@@ -43,11 +43,11 @@
       </button>
     </div>
     
-    <div class="cart-icon" role="button" aria-label="Carrinho de compras" tabindex="0">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span class="cart-counter" id="cart-counter">0</span>
-    </div>
-  </div>
+   <div class="cart-icon" role="button" aria-label="Carrinho de compras" tabindex="0"
+     data-bs-toggle="modal" data-bs-target="#modalCarrinho">
+  <i class="fa-solid fa-cart-shopping"></i>
+  <span class="cart-counter" id="contadorCarrinho">0</span>
+</div>
 </header>
 
 <!-- Banner Simples -->
@@ -150,17 +150,13 @@
           <p class="text-muted small mb-1"><%= lista[i].marca %></p>
           <p>R$ <%= Number(lista[i].preco).toFixed(2).replace('.', ',') %></p>
 
-          <% if (Number(lista[i].qnt) <= 0) { %>
-
-    <span class="badge text-bg-secondary">Esgotado</span>
-
+         <% if (Number(lista[i].qnt) <= 0) { %>
+  <span class="badge text-bg-secondary">Esgotado</span>
 <% } else { %>
-
-    <button type="button" class="btn btn-success w-100 mt-2"
-        onclick="adicionarCarrinho(event, this)">
-        <i class="fa-solid fa-cart-plus me-1"></i> Adicionar
-    </button>
-
+  <button type="button" class="btn btn-success w-100 mt-2 addCarrinho"
+          data-produto="<%= lista[i].id_produto %>">
+    <i class="fa-solid fa-cart-plus me-1"></i> Adicionar ao carrinho
+  </button>
 <% } %>
 
           
@@ -225,134 +221,23 @@
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
-        <h5 class="modal-title" id="modalCarrinhoLabel">Carrinho e Entrega</h5>
+        <h5 class="modal-title" id="modalCarrinhoLabel">Carrinho</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-
       <div class="modal-body">
-        <h6 class="fw-bold text-success">Itens escolhidos</h6>
-        <div id="itens-carrinho" class="mb-3">
-          <p class="text-muted">Carrinho vazio.</p>
-        </div>
-
-        <div class="alert alert-success d-flex justify-content-between align-items-center">
-          <strong>Total:</strong>
-          <strong>R$ <span id="total-carrinho">0,00</span></strong>
-        </div>
-
-        <form id="formCompra" novalidate>
-          <h6 class="fw-bold text-success mt-4">Dados para entrega</h6>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="compraNome" class="form-label">Nome completo</label>
-              <input type="text" class="form-control" id="compraNome" required minlength="3">
-              <div class="invalid-feedback">Informe seu nome.</div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="compraTelefone" class="form-label">Telefone</label>
-              <input type="text" class="form-control" id="compraTelefone" maxlength="15" placeholder="(18) 99999-9999" required>
-              <div class="invalid-feedback">Informe o telefone.</div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4 mb-3">
-              <label for="compraCep" class="form-label">CEP</label>
-              <div class="input-group">
-                <input type="text" class="form-control" id="compraCep" maxlength="9" placeholder="00000-000" required>
-                <button class="btn btn-outline-secondary" type="button" id="btnBuscaCep">Buscar CEP</button>
-              </div>
-              <div class="invalid-feedback">Informe o CEP.</div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="compraRua" class="form-label">Rua</label>
-              <input type="text" class="form-control" id="compraRua" required>
-              <div class="invalid-feedback">Informe a rua.</div>
-            </div>
-            <div class="col-md-2 mb-3">
-              <label for="compraNumero" class="form-label">Número</label>
-              <input type="text" class="form-control" id="compraNumero" required>
-              <div class="invalid-feedback">Informe o número.</div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-5 mb-3">
-              <label for="compraBairro" class="form-label">Bairro</label>
-              <input type="text" class="form-control" id="compraBairro" required>
-              <div class="invalid-feedback">Informe o bairro.</div>
-            </div>
-            <div class="col-md-5 mb-3">
-              <label for="compraCidade" class="form-label">Cidade</label>
-              <input type="text" class="form-control" id="compraCidade" required>
-              <div class="invalid-feedback">Informe a cidade.</div>
-            </div>
-            <div class="col-md-2 mb-3">
-              <label for="compraUf" class="form-label">UF</label>
-              <input type="text" class="form-control" id="compraUf" maxlength="2" placeholder="SP" required>
-              <div class="invalid-feedback">UF.</div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="compraObs" class="form-label">Observação</label>
-            <textarea class="form-control" id="compraObs" rows="2" placeholder="Ex: retirar sementes, entregar no portão..."></textarea>
-          </div>
-
-          <h6 class="fw-bold text-success mt-4">Forma de pagamento</h6>
-          <div class="row mb-3">
-            <div class="col-md-4">
-              <div class="form-check border rounded p-3">
-                <input class="form-check-input ms-0 me-2" type="radio" name="pagamento" id="pagPix" value="Pix" checked>
-                <label class="form-check-label" for="pagPix">Pix</label>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-check border rounded p-3">
-                <input class="form-check-input ms-0 me-2" type="radio" name="pagamento" id="pagDinheiro" value="Dinheiro">
-                <label class="form-check-label" for="pagDinheiro">Dinheiro</label>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-check border rounded p-3">
-                <input class="form-check-input ms-0 me-2" type="radio" name="pagamento" id="pagCartao" value="Cartão">
-                <label class="form-check-label" for="pagCartao">Cartão</label>
-              </div>
-            </div>
-          </div>
-
-          <div id="areaCartao" class="border rounded p-3 mb-3 bg-light" style="display:none;">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="numeroCartao" class="form-label">Número do cartão</label>
-                <input type="text" class="form-control" id="numeroCartao" maxlength="19" placeholder="0000 0000 0000 0000">
-              </div>
-              <div class="col-md-3 mb-3">
-                <label for="validadeCartao" class="form-label">Validade</label>
-                <input type="text" class="form-control" id="validadeCartao" maxlength="5" placeholder="MM/AA">
-              </div>
-              <div class="col-md-3 mb-3">
-                <label for="cvvCartao" class="form-label">CVV</label>
-                <input type="text" class="form-control" id="cvvCartao" maxlength="3" placeholder="123">
-              </div>
-            </div>
-            <small class="text-muted">Exemplo visual para o trabalho, sem cobrança real.</small>
-          </div>
-
-          <div id="areaPix" class="alert alert-info py-2">Chave Pix exemplo: contato@greengo.com.br</div>
-          <div id="areaDinheiro" class="alert alert-warning py-2" style="display:none;">Pagamento em dinheiro será combinado na entrega.</div>
-
-          <button type="submit" class="btn btn-success w-100 mt-2">
-            Finalizar pedido pelo WhatsApp
-          </button>
-        </form>
+        <div id="modalCarrinhoCorpo">Carrinho vazio!</div>
+        <div class="alert alert-success mt-3 mb-0" id="valorTotalPedido">Valor total do pedido: R$ 0.00</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-success" id="btnConfirmar">Confirmar pedido</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Modal Bootstrap: Produto Detalhe -->
-<div class="modal fade" id="modalProduto" tabindex="-1" aria-labelledby="modalProdutoLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="modalProduto" tabindex="-1" aria-labelledby="modalProdutoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
@@ -382,7 +267,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <!-- Modal Bootstrap: Login / Criar Conta -->
 <div class="modal fade" id="modalConta" tabindex="-1" aria-labelledby="modalContaLabel" aria-hidden="true">
