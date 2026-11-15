@@ -232,9 +232,40 @@ class loteModel {
         return result;
     }
 
-  
+    async lotesvencimento() {
+    let sql = `SELECT
+                p.id_produto,
+                p.nome,
+                l.id_lote,
+                l.numero_lote,
+                l.data_validade,
+                l.quantidade_atual
+            FROM tb_lote l
+            INNER JOIN tb_produto p
+                ON p.id_produto = l.id_produto
+            WHERE l.data_validade BETWEEN CURDATE()
+                AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                AND l.quantidade_atual > 0
+            ORDER BY l.data_validade ASC`;
 
+    let rows = await banco.ExecutaComando(sql);
+    let lista = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        lista.push(new loteModel(
+            rows[i]["id_lote"],
+            rows[i]["id_produto"],
+            rows[i]["numero_lote"],
+            rows[i]["data_validade"],
+            rows[i]["quantidade_atual"],
+            rows[i]["nome"]
+        ));
+    }
+
+    return lista;
+}
 
 }
 
 module.exports = loteModel;
+

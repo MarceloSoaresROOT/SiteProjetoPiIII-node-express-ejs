@@ -24,6 +24,8 @@ app.use("/categorias", require("./routes/categoriaRoute"));
 app.use("/categorias", require("./routes/categoriaRoute"));
 app.use("/funcionarios", require("./routes/pessoaFisicaRoute"));
 app.use("/pedido",require("./routes/pedidoRoute"))
+app.use("/promocoes",require("./routes/promocaoRoute"))
+
 
 
 
