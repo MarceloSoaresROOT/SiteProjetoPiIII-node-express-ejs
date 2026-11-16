@@ -5,6 +5,19 @@ var carrinho = [];
 
 // Envia JSON para a API e devolve { ok, status, dados }
 
+function chamarApi(url, dados, metodo = 'POST') {
+  const opcoes = {
+    method: metodo,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (dados) opcoes.body = JSON.stringify(dados);
+  return fetch(url, opcoes).then(function (resp) {
+    return resp.json()
+      .catch(function () { return {}; })
+      .then(function (json) { return { ok: resp.ok, dados: json }; });
+  });
+}
+
 function scrollToProducts() {
   document.getElementById('produtos').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

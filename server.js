@@ -19,6 +19,7 @@ app.use("/clientes", require("./routes/clientesRoute"));
 app.use("/fornecedores", require("./routes/fornecedorRoute"));
 app.use("/produtos", require("./routes/produtosRoute"));
 app.use("/lotes", require("./routes/loteRoute"));
+app.use("/descartes", require("./routes/descarteRoute"));
 app.use("/marcas", require("./routes/marcasRoute"));
 app.use("/categorias", require("./routes/categoriaRoute"));
 app.use("/categorias", require("./routes/categoriaRoute"));
