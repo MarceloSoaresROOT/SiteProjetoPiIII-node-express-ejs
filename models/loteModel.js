@@ -1,4 +1,3 @@
-
 const Database = require("../db/database");
 const banco = new Database();
 
@@ -80,41 +79,77 @@ class loteModel {
     }
 
   
+    // Cadastra (id_lote = 0) ou altera um lote.
+    // Tudo numa TRANSAÇÃO, porque mexe também no estoque do produto (tb_produto.qnt):
+    //  - cadastro: a quantidade do lote é SOMADA ao estoque do produto
+    //  - alteração com troca de produto: a quantidade atual do lote SAI do produto antigo e ENTRA no novo
     async cadastrarLote() {
+        let cnn = await banco.conexao.promise().getConnection();
 
-        if (this.#id_lote == 0) {
+        try {
+            await cnn.beginTransaction();
 
-            let sql = `insert into tb_lote
-                (id_produto, numero_lote, data_validade, quantidade_atual)
-                values (?, ?, ?, ?)`;
+            if (this.#id_lote == 0) {
 
-            let valores = [
-                this.#id_produto,
-                this.#numero_lote,
-                this.#data_validade,
-                this.#quantidade_atual
-            ];
+                // quantidade_inicial guarda a quantidade cadastrada do lote
+                // (usada como limite nas devoluções)
+                await cnn.query(
+                    `insert into tb_lote
+                        (id_produto, numero_lote, data_validade, quantidade_atual, quantidade_inicial)
+                        values (?, ?, ?, ?, ?)`,
+                    [this.#id_produto, this.#numero_lote, this.#data_validade, this.#quantidade_atual, this.#quantidade_atual]
+                );
 
-            let result = await banco.ExecutaComandoNonQuery(sql, valores);
+                await cnn.query(
+                    `update tb_produto set qnt = qnt + ? where id_produto = ?`,
+                    [this.#quantidade_atual, this.#id_produto]
+                );
+            }
+            else {
 
-            return result;
+                // como o lote está hoje (produto e quantidade), antes de alterar
+                let [atual] = await cnn.query(
+                    `select id_produto, quantidade_atual from tb_lote where id_lote = ? for update`,
+                    [this.#id_lote]
+                );
+
+                if (atual.length == 0) {
+                    await cnn.rollback();
+                    return false;
+                }
+
+                await cnn.query(
+                    `update tb_lote
+                        set id_produto = ?, numero_lote = ?, data_validade = ?
+                        where id_lote = ?`,
+                    [this.#id_produto, this.#numero_lote, this.#data_validade, this.#id_lote]
+                );
+
+                // trocou o produto: transfere o estoque do lote de um produto para o outro
+                let produtoAntigo = atual[0].id_produto;
+                let quantidade = atual[0].quantidade_atual;
+
+                if (produtoAntigo != this.#id_produto && quantidade > 0) {
+                    await cnn.query(
+                        `update tb_produto set qnt = GREATEST(qnt - ?, 0) where id_produto = ?`,
+                        [quantidade, produtoAntigo]
+                    );
+                    await cnn.query(
+                        `update tb_produto set qnt = qnt + ? where id_produto = ?`,
+                        [quantidade, this.#id_produto]
+                    );
+                }
+            }
+
+            await cnn.commit();
+            return true;
         }
-        else {
-
-            let sql = `update tb_lote
-                set id_produto = ?, numero_lote = ?, data_validade = ?
-                where id_lote = ?`;
-
-            let valores = [
-                this.#id_produto,
-                this.#numero_lote,
-                this.#data_validade,
-                this.#id_lote
-            ];
-
-            let result = await banco.ExecutaComandoNonQuery(sql, valores);
-
-            return result;
+        catch (erro) {
+            await cnn.rollback();
+            throw erro;
+        }
+        finally {
+            cnn.release();
         }
     }
 
@@ -180,19 +215,43 @@ class loteModel {
         return null;
     }
 
+    // Exclui o lote e SUBTRAI a quantidade atual dele do estoque do produto.
+    // Se o lote estiver ligado a pedidos, devoluções ou descartes, o banco recusa
+    // (erro ER_ROW_IS_REFERENCED_2) e nada é alterado.
     async excluir(id) {
+        let cnn = await banco.conexao.promise().getConnection();
 
-        let sql = "DELETE FROM tb_lote WHERE id_lote = ?";
+        try {
+            await cnn.beginTransaction();
 
-        let valores = [id];
+            let [atual] = await cnn.query(
+                `select id_produto, quantidade_atual from tb_lote where id_lote = ? for update`,
+                [id]
+            );
 
-        let result = await banco.ExecutaComandoNonQuery(sql, valores);
+            if (atual.length == 0) {
+                await cnn.rollback();
+                return false;
+            }
 
-        return result;
+            await cnn.query("DELETE FROM tb_lote WHERE id_lote = ?", [id]);
+
+            await cnn.query(
+                `update tb_produto set qnt = GREATEST(qnt - ?, 0) where id_produto = ?`,
+                [atual[0].quantidade_atual, atual[0].id_produto]
+            );
+
+            await cnn.commit();
+            return true;
+        }
+        catch (erro) {
+            await cnn.rollback();
+            throw erro;
+        }
+        finally {
+            cnn.release();
+        }
     }
-
-  
-
 
 }
 
