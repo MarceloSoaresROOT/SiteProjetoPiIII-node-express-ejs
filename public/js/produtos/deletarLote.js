@@ -27,13 +27,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 })
                 .then(r=> {
                     if(r.ok) {
+                        // a mensagem aparece depois de recarregar (lote.js mostra) e some em 4 segundos
+                        guardarMensagem(r.msg, "success");
                         window.location.reload();
                     }
                     else{
                         alert(r.msg);
                     }
-
                 })
+                .catch(() => {
+                    alert("Erro de conexão com o servidor.");
+                });
 
             }
         }
@@ -41,6 +45,4 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Nenhum ID encontrado para exclusão");
         }
     }
-
-
 })
