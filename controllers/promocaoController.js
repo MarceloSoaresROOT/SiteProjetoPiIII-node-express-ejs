@@ -14,6 +14,7 @@ class PromocaoController {
         }
     }
 
+    
 }
 
 module.exports = PromocaoController;

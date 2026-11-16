@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function gravar(e) {
         // evita o envio normal do formulário
         e.preventDefault();
-
+        
         // pega o formulário da linha onde o botão foi clicado
         let form = e.target.closest('.form-promocao');
 
