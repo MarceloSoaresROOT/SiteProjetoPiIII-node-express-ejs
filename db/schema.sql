@@ -448,7 +448,6 @@ DROP TABLE IF EXISTS `PFS1_10442521970`.`tb_item_promocao` ;
 
 CREATE TABLE IF NOT EXISTS `PFS1_10442521970`.`tb_item_promocao` (
   `id_promocao` BIGINT NOT NULL,
-  `id_produto` BIGINT NOT NULL,
   `id_lote` BIGINT NOT NULL,
   `itens_qntd` BIGINT NOT NULL,
   `itens_valor` DECIMAL(10,2) NOT NULL,
@@ -458,9 +457,6 @@ CREATE TABLE IF NOT EXISTS `PFS1_10442521970`.`tb_item_promocao` (
   CONSTRAINT `fk_ipromo_lote`
     FOREIGN KEY (`id_lote`)
     REFERENCES `PFS1_10442521970`.`tb_lote` (`id_lote`),
-  CONSTRAINT `fk_ipromo_prod`
-    FOREIGN KEY (`id_produto`)
-    REFERENCES `PFS1_10442521970`.`tb_produto` (`id_produto`),
   CONSTRAINT `fk_ipromo_promo`
     FOREIGN KEY (`id_promocao`)
     REFERENCES `PFS1_10442521970`.`tb_promocao` (`id_promocao`))

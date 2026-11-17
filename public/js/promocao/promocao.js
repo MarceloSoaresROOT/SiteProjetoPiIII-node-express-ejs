@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let qnt = form.querySelector('#itens_qntd').value;
         let inicio = form.querySelector('#data_inicio').value;
         let fim = form.querySelector('#data_fim').value;
-
+        
         let obj =
         {
             id_lote: id_lote,
