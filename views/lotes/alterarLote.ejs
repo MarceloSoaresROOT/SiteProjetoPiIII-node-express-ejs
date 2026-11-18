@@ -21,6 +21,13 @@
       }
     }
   }
+
+  // validade em aaaa-mm-dd: é o único formato que o campo <input type="date"> aceita
+  let validadeISO = '';
+  if (validadeInput) {
+    const [d, m, a] = validadeInput.split('/');
+    validadeISO = `${a}-${m}-${d}`;
+  }
 %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -77,8 +84,10 @@
             <label for="novaValidade" class="form-label">Validade atual</label>
             <input disabled type="text" class="form-control" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" value="<%= validadeInput %>">
             <label for="novaValidade" class="form-label">Nova Validade *</label>
-            <input  type="date" class="form-control" id="novaValidade" placeholder="dd/mm/aaaa"  value="<%= validadeInput %>">
+            <input  type="date" class="form-control" id="novaValidade" placeholder="dd/mm/aaaa"  value="<%= validadeISO %>">
+            <input type="hidden" id="validadeAtualISO" value="<%= validadeISO %>">
             <div class="invalid-feedback">Informe uma data válida (dd/mm/aaaa).</div>
+            <div class="form-text" id="avisoValidade"></div>
           </div>
           <div class="col-12">
             <p class="text-muted small mb-0" id="avisoQuantidade">
@@ -86,6 +95,12 @@
               Depois de criado, o estoque do lote só muda por movimentação.
             </p>
           </div>
+        </div>
+
+        <!-- aparece quando o lote está vencido há mais de 7 dias (não pode ser alterado) -->
+        <div class="alert alert-danger d-none mt-3 mb-0" id="loteBloqueado">
+          <i class="bi bi-lock me-1"></i>
+          Este lote está vencido há mais de 7 dias e não pode ser alterado.
         </div>
 
         <div class="alert alert-danger d-none mt-3 mb-0" id="erroAdicionarLote">
@@ -113,6 +128,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/validacao/validacoes.js"></script>
+<script src="/js/util/mensagem.js"></script>
+<script src="/js/produtos/validadeLote.js"></script>
 <script src="/js/produtos/loteAlterar.js"></script>
 <script>
   // Abre o modal assim que a página carrega e volta para a listagem ao fechar

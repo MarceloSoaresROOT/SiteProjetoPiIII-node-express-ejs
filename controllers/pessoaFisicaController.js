@@ -1,8 +1,9 @@
-class funcionariosController
+class PessoaFisicaController
 {
+     
      listarFuncionario(req, res) {
         res.render('usuarios/funcionarios/funcionarios');
     }
 }
 
-module.exports = funcionariosController
+module.exports = PessoaFisicaController

@@ -12,6 +12,7 @@ router.post("/cadastro", upload.single("imagem"), controller.cadastrarProduto);
 router.post("/excluir", controller.excluirProduto);
 router.get("/alterar/:id", controller.alterarView);
 router.post("/alterar",upload.single("imagem"), controller.alterarProduto);
+router.get("/obter/:produto", controller.obterProduto);
 
 
 module.exports = router;
