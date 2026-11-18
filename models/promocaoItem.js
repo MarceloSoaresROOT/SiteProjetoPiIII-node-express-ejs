@@ -1,8 +1,8 @@
-import Database from "../utils/database.js";
+const Database = require("../db/database");
 
 const banco = new Database();
 
-export default class itens_promocao {
+class itens_promocao {
 
     #id_promocao;
     #descricao;
@@ -17,36 +17,23 @@ export default class itens_promocao {
     #produto;
     #preco;
     #id_produto;
-
-    constructor(
-        id_promocao = 0,
-        descricao = "",
-        percentual_desconto = 0,
-        data_inicio = "",
-        data_fim = "",
-        ativa = 1,
-        itens_qntd = 0,
-        itens_valor = 0,
-        id_lote = 0,
-        quantidade_atual = 0,
-        produto = "",
-        preco = 0,
-        id_produto = 0
-    ) {
-        this.#id_promocao = id_promocao;
-        this.#descricao = descricao;
-        this.#percentual_desconto = percentual_desconto;
-        this.#data_inicio = data_inicio;
-        this.#data_fim = data_fim;
-        this.#ativa = ativa;
-        this.#itens_qntd = itens_qntd;
-        this.#itens_valor = itens_valor;
-        this.#id_lote = id_lote;
-        this.#quantidade_atual = quantidade_atual;
-        this.#produto = produto;
-        this.#preco = preco;
-        this.#id_produto = id_produto;
-    }
+    #numero_lote;
+    constructor(id_promocao, descricao, percentual_desconto, data_inicio, data_fim, ativa,
+            itens_qntd, itens_valor, id_lote, quantidade_atual, produto, preco, id_produto) {
+    this.#id_promocao = id_promocao;
+    this.#descricao = descricao;
+    this.#percentual_desconto = percentual_desconto;
+    this.#data_inicio = data_inicio;
+    this.#data_fim = data_fim;
+    this.#ativa = ativa;
+    this.#itens_qntd = itens_qntd;
+    this.#itens_valor = itens_valor;
+    this.#id_lote = id_lote;
+    this.#quantidade_atual = quantidade_atual;
+    this.#produto = produto;
+    this.#preco = preco;
+    this.#id_produto = id_produto;
+}
 
     // ---------- GETTERS E SETTERS ----------
     get id_promocao() { return this.#id_promocao; }
@@ -88,7 +75,24 @@ export default class itens_promocao {
     get id_produto() { return this.#id_produto; }
     set id_produto(v) { this.#id_produto = v; }
 
+    get numero_lote() { return this.#numero_lote; }
+    set numero_lote(v) { this.#numero_lote = v; }
+
     // ---------- BANCO ----------
+
+    async atualizarPromoFlag()
+    {
+        let sql = `update tb_promocao
+                set ativa = 'N'
+                where data_fim < curdate()
+                and ativa = 'S'`;
+
+        let result = await banco.ExecutaComandoNonQuery(sql); 
+        return result; 
+}
+
+
+
     async gravar() {
         let sql = `insert into tb_item_promocao
             (id_promocao, id_lote, itens_qntd, itens_valor, id_produto)
@@ -117,7 +121,7 @@ export default class itens_promocao {
                 p.ativa,
                 i.itens_qntd,
                 i.itens_valor,
-                l.id_lote,
+                l.numero_lote,
                 l.quantidade_atual,
                 pr.nome as produto,
                 pr.preco as precoNormal,
@@ -140,7 +144,7 @@ export default class itens_promocao {
                 row["ativa"],
                 row["itens_qntd"],
                 row["itens_valor"],
-                row["id_lote"],
+                row["numero_lote"],
                 row["quantidade_atual"],
                 row["produto"],
                 row["precoNormal"],
@@ -151,16 +155,23 @@ export default class itens_promocao {
         return lista;
     }
 
-    toJson() {
-        return {
-            id_promocao: this.#id_promocao,
-            descricao: this.#descricao,
-            percentual_desconto: this.#percentual_desconto,
-            data_inicio: this.#data_inicio,
-            data_fim: this.#data_fim,
-            ativa: this.#ativa,
-            itens_qntd: this.#itens_qntd,
-            itens_valor: this.#itens_valor
-        };
-    }
+   toJson() {
+    return {
+        id_promocao: this.#id_promocao,
+        descricao: this.#descricao,
+        percentual_desconto: this.#percentual_desconto,
+        data_inicio: this.#data_inicio,
+        data_fim: this.#data_fim,
+        ativa: this.#ativa,
+        itens_qntd: this.#itens_qntd,
+        itens_valor: this.#itens_valor,
+        id_lote: this.#id_lote,
+        quantidade_atual: this.#quantidade_atual,
+        produto: this.#produto,
+        preco: this.#preco,
+        id_produto: this.#id_produto
+    };
 }
+}
+
+module.exports = itens_promocao

@@ -26,7 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
         let qnt = form.querySelector('#itens_qntd').value;
         let inicio = form.querySelector('#data_inicio').value;
         let fim = form.querySelector('#data_fim').value;
-        
+        let ativo = form.querySelector('#ativo').value
+        console.log(ativo)
         let obj =
         {
             id_lote: id_lote,
@@ -35,10 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
             percentual: percentual,
             qnt: qnt,
             inicio: inicio,
-            fim: fim
+            fim: fim,
+            ativo: ativo
         }
 
-        fetch("/promocao/cadastrar", {
+        fetch("/promocoes/cadastrar", {
             method: 'POST',
             body: JSON.stringify(obj),
             headers: {

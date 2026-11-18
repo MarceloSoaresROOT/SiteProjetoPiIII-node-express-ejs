@@ -1,4 +1,4 @@
-const Database = require("../utils/database");
+const Database = require("../db/database");
 
 const banco = new Database();
 
@@ -17,7 +17,7 @@ class Promocao {
         percentual_desconto = 0,
         data_inicio = "",
         data_fim = "",
-        ativa = 1
+        ativa = "",
     ) {
         this.#id_promocao = id_promocao;
         this.#descricao = descricao;
