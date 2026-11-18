@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <script src="/js/promocao/promocao.js"></script>
+  <script src="/js/promocao/promocaoAlterar.js"></script>
 <style>
     body { background: #f6f8f5; }
     .card-soft { border: 0; border-radius: 18px; box-shadow: 0 10px 26px rgba(20, 83, 45, 0.08); }
@@ -59,6 +60,12 @@
             </tr>
           </thead>
           <tbody>
+            <%
+              var statusPorLote = {};
+              (promocoes || []).forEach(function(p) {
+                statusPorLote[String(p.id_lote)] = p.ativa;
+              });
+            %>
             <% if (lotes && lotes.length > 0) { %>
               <% lotes.forEach(function(l) {
                    var validade = new Date(l.data_validade);
@@ -76,11 +83,18 @@
                   <td><%= validade.toLocaleDateString('pt-BR') %></td>
                   <td><span class="badge <%= classe %>"><%= dias <= 0 ? 'Hoje' : (dias === 1 ? '1 dia' : dias + ' dias') %></span></td>
                   <td class="text-end"><%= l.quantidade_atual %></td>
-                  <td class="text-end">
+                <td class="text-end">
+                  <% var statusLote = statusPorLote[String(l.id_lote)]; %>
+                  <% if (statusLote === 'S') { %>
+                    <span class="badge text-bg-success">Promoção ativa</span>
+                  <% } else if (statusLote === 'N') { %>
+                    <span class="badge text-bg-secondary">Promoção inativa</span>
+                  <% } else { %>
                     <button class="btn btn-sm btn-success" type="button" data-bs-toggle="collapse" data-bs-target="#promo-<%= l.id_lote %>" aria-expanded="false" aria-controls="promo-<%= l.id_lote %>">
                       <i class="bi bi-percent me-1"></i>Cadastrar promoção
                     </button>
-                  </td>
+                  <% } %>
+              </td>
                 </tr>
                 <tr class="collapse" id="promo-<%= l.id_lote %>">
                   <td colspan="6" class="bg-light">
@@ -149,53 +163,103 @@
     <h4 class="fw-bold text-success mb-3">Promoções cadastradas</h4>
     <div class="table-responsive">
       <table class="table align-middle mb-0">
-        <thead>
-          <tr>
-            <th>Produto</th>
-            <th>Descrição</th>
-            <th>Lote</th>
-            <th class="text-end">Desconto</th>
-            <th class="text-end">Preço normal</th>
-            <th class="text-end">Preço promo</th>
-            <th class="text-end">Qtd.</th>
-            <th>Período</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (promocoes && promocoes.length > 0) { %>
-            <% promocoes.forEach(function(p) { %>
-              <tr>
-                <td class="fw-semibold"><%= p.produto %></td>
-                <td><%= p.descricao || '-' %></td>
-                <td><%= p.id_lote %></td>
-                <td class="text-end"><%= Number(p.percentual_desconto).toFixed(2) %>%</td>
-                <td class="text-end">R$ <%= Number(p.preco).toFixed(2).replace('.', ',') %></td>
-                <td class="text-end text-success fw-semibold">
-                  R$ <%= Number(p.itens_valor).toFixed(2).replace('.', ',') %>
-                </td>
-                <td class="text-end"><%= p.itens_qntd %></td>
-                <td>
-                  <%= new Date(p.data_inicio).toLocaleDateString('pt-BR') %>
-                  até
-                  <%= new Date(p.data_fim).toLocaleDateString('pt-BR') %>
-                </td>
-                <td>
-                  <% if (p.ativa === 'S') { %>
-                    <span class="badge text-bg-success">Ativa</span>
-                  <% } else { %>
-                    <span class="badge text-bg-secondary">Inativa</span>
-                  <% } %>
-                </td>
-              </tr>
-            <% }); %>
+       <thead>
+  <tr>
+    <th>Produto</th>
+    <th>Descrição</th>
+    <th>Lote</th>
+    <th class="text-end">Desconto</th>
+    <th class="text-end">Preço normal</th>
+    <th class="text-end">Preço promo</th>
+    <th class="text-end">Qtd.</th>
+    <th>Período</th>
+    <th>Status</th>
+    <th class="text-end">Ação</th>
+  </tr>
+</thead>
+<tbody>
+  <% if (promocoes && promocoes.length > 0) { %>
+    <% promocoes.forEach(function(p) { %>
+      <tr>
+        <td class="fw-semibold"><%= p.produto %></td>
+        <td><%= p.descricao || '-' %></td>
+        <td><%= p.id_lote %></td>
+        <td class="text-end"><%= Number(p.percentual_desconto).toFixed(2) %>%</td>
+        <td class="text-end">R$ <%= Number(p.preco).toFixed(2).replace('.', ',') %></td>
+        <td class="text-end text-success fw-semibold">
+          R$ <%= Number(p.itens_valor).toFixed(2).replace('.', ',') %>
+        </td>
+        <td class="text-end"><%= p.itens_qntd %></td>
+        <td>
+          <%= new Date(p.data_inicio).toLocaleDateString('pt-BR') %>
+          até
+          <%= new Date(p.data_fim).toLocaleDateString('pt-BR') %>
+        </td>
+        <td>
+          <% if (p.ativa === 'S') { %>
+            <span class="badge text-bg-success">Ativa</span>
           <% } else { %>
-            <tr>
-              <td colspan="9" class="text-center text-muted py-4">Nenhuma promoção cadastrada.</td>
-            </tr>
+            <span class="badge text-bg-secondary">Inativa</span>
           <% } %>
-        </tbody>
+        </td>
+        <td class="text-end">
+          <button type="button"
+                  class="btn btn-sm btn-outline-success btn-editar-promocao"
+                  data-id="<%= p.id_promocao %>"
+                  data-descricao="<%= p.descricao || '' %>"
+                  data-desconto="<%= Number(p.percentual_desconto).toFixed(2) %>"
+                  data-ativo="<%= p.ativa %>"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEditarPromocao">
+            <i class="bi bi-pencil-square me-1"></i>Editar
+          </button>
+        </td>
+      </tr>
+    <% }); %>
+  <% } else { %>
+    <tr>
+      <td colspan="10" class="text-center text-muted py-4">Nenhuma promoção cadastrada.</td>
+    </tr>
+  <% } %>
+</tbody>
       </table>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="modalEditarPromocao" tabindex="-1" aria-labelledby="modalEditarPromocaoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 18px;">
+      <form id="formEditarPromocao">
+        <div class="modal-header">
+          <h5 class="modal-title text-success fw-bold" id="modalEditarPromocaoLabel">Editar promoção</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit_id_promocao" name="id_promocao">
+
+          <div class="mb-3">
+            <label for="edit_descricao" class="form-label">Descrição</label>
+            <input value="" type="text" id="edit_descricao" name="descricao" class="form-control" maxlength="200">
+          </div>
+
+          <div class="mb-3">
+            <label for="edit_percentual_desconto" class="form-label">Desconto (%)</label>
+            <input value="" type="number" id="edit_percentual_desconto" name="percentual_desconto" class="form-control" min="1" max="99" step="0.01" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="edit_ativo" class="form-label">Ativa</label>
+            <select id="edit_ativo" name="ativo" class="form-select" required>
+              <option value="S">Sim</option>
+              <option value="N">Não</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Salvar alterações</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

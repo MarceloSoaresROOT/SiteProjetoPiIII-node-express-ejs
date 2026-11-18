@@ -69,16 +69,27 @@ class Promocao {
         return false;
     }
 
+    
+    async atualizarPromoFlag()
+    {
+        let sql = `update tb_promocao
+                set ativa = 'N'
+                where data_fim < curdate()
+                and ativa = 'S'`;
+
+        let result = await banco.ExecutaComandoNonQuery(sql); 
+        return result; 
+}
+
+
     async alterar() {
         let sql = `update tb_promocao
-            set descricao = ?, percentual_desconto = ?, data_inicio = ?, data_fim = ?, ativa = ?
+            set descricao = ?, percentual_desconto = ?,  ativa = ?
             where id_promocao = ?`;
 
         let valores = [
             this.#descricao,
             this.#percentual_desconto,
-            this.#data_inicio,
-            this.#data_fim,
             this.#ativa,
             this.#id_promocao
         ];

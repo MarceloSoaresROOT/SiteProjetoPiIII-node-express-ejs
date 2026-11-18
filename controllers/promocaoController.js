@@ -9,14 +9,14 @@ class PromocaoController {
     async listarLotePromo(req, res) {
     try {
         let promo = new itens_promocao();
-        await promo.atualizarPromoFlag();
         let lotesPromo = new loteModel();
         let lotes = await lotesPromo.lotesvencimento();
-
+        let atualizarPromo = new Promocao();
+        atualizarPromo = await atualizarPromo.atualizarPromoFlag();
         let listaPromo = await promo.listarpromo();
         let promocoes = listaPromo.map(p => p.toJson());
 
-        res.render("promocao/promocao", { lotes, promocoes });
+        res.render("promocao/promocao", { lotes, promocoes, atualizarPromo });
     } catch (erro) {
         console.log(erro);
         res.status(500).send("Erro ao listar lotes a vencer.");
@@ -70,6 +70,36 @@ class PromocaoController {
     res.send({ok: ok})
 
     }
+
+    async atualizarPromo(req, res) {
+    let ok = false;
+    let msg = "";
+    try {
+        const { id_promocao, descricao, percentual_desconto, ativo } = req.body;
+
+        if (id_promocao && percentual_desconto && (ativo === "S" || ativo === "N")) {
+            let promo = new Promocao();
+            promo.id_promocao = id_promocao;
+            promo.descricao = descricao;
+            promo.percentual_desconto = percentual_desconto;
+            promo.ativa = ativo;
+
+            if (await promo.alterar()) {
+                // recalcula o preço promocional dos itens com o novo desconto
+                let item = new itens_promocao();
+                ok = await item.recalcularValor(id_promocao, percentual_desconto);
+            }
+            if (!ok) msg = "Erro ao atualizar promoção.";
+        } else {
+            msg = "Preencha todos os campos corretamente.";
+        }
+    } catch (erro) {
+        console.log(erro);
+        msg = "Erro interno ao atualizar.";
+    }
+    res.send({ ok, msg });
+}
+
 }
 
 module.exports = PromocaoController;

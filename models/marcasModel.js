@@ -43,7 +43,7 @@ class MarcaModel {
         let sql = `
             SELECT m.id_marca, m.nome, COUNT(p.id_produto) AS total_produtos
             FROM tb_marca m
-            LEFT JOIN tb_produto p ON p.id_marca = m.id_marca
+            LEFT JOIN tb_produto p ON p.id_marca = m.id_marca 
         `;
         let valores = [];
 

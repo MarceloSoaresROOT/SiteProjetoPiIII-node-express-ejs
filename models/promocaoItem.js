@@ -80,17 +80,14 @@ class itens_promocao {
 
     // ---------- BANCO ----------
 
-    async atualizarPromoFlag()
-    {
-        let sql = `update tb_promocao
-                set ativa = 'N'
-                where data_fim < curdate()
-                and ativa = 'S'`;
-
-        let result = await banco.ExecutaComandoNonQuery(sql); 
-        return result; 
+async recalcularValor(id_promocao, percentual) {
+    let sql = `UPDATE tb_item_promocao ip
+               JOIN tb_produto p ON p.id_produto = ip.id_produto
+               SET ip.itens_valor = p.preco - (p.preco * ? / 100)
+               WHERE ip.id_promocao = ?`;
+    let banco = new Database();
+    return await banco.ExecutaComando(sql, [percentual, id_promocao]);
 }
-
 
 
     async gravar() {
@@ -121,6 +118,7 @@ class itens_promocao {
                 p.ativa,
                 i.itens_qntd,
                 i.itens_valor,
+                l.id_lote,
                 l.numero_lote,
                 l.quantidade_atual,
                 pr.nome as produto,
@@ -144,6 +142,7 @@ class itens_promocao {
                 row["ativa"],
                 row["itens_qntd"],
                 row["itens_valor"],
+                row["id_lote"],
                 row["numero_lote"],
                 row["quantidade_atual"],
                 row["produto"],
