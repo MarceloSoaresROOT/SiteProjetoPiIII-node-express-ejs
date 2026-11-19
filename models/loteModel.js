@@ -92,6 +92,7 @@ class loteModel {
     return Number(rows[0].total || 0);
     }
 
+      
     
     async buscarLotes(id_produto,qnt) {
 

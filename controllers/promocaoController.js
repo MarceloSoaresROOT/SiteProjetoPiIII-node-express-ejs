@@ -15,7 +15,7 @@ class PromocaoController {
         atualizarPromo = await atualizarPromo.atualizarPromoFlag();
         let listaPromo = await promo.listarpromo();
         let promocoes = listaPromo.map(p => p.toJson());
-
+        
         res.render("promocao/promocao", { lotes, promocoes, atualizarPromo });
     } catch (erro) {
         console.log(erro);

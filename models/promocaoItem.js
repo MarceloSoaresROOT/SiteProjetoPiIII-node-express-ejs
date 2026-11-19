@@ -13,27 +13,36 @@ class itens_promocao {
     #itens_qntd;
     #itens_valor;
     #id_lote;
+    #numero_lote;
     #quantidade_atual; // do lote
     #produto;
     #preco;
     #id_produto;
-    #numero_lote;
+    #imagem;
+    #marca;
+    #categoria;
+
     constructor(id_promocao, descricao, percentual_desconto, data_inicio, data_fim, ativa,
-            itens_qntd, itens_valor, id_lote, quantidade_atual, produto, preco, id_produto) {
-    this.#id_promocao = id_promocao;
-    this.#descricao = descricao;
-    this.#percentual_desconto = percentual_desconto;
-    this.#data_inicio = data_inicio;
-    this.#data_fim = data_fim;
-    this.#ativa = ativa;
-    this.#itens_qntd = itens_qntd;
-    this.#itens_valor = itens_valor;
-    this.#id_lote = id_lote;
-    this.#quantidade_atual = quantidade_atual;
-    this.#produto = produto;
-    this.#preco = preco;
-    this.#id_produto = id_produto;
-}
+                itens_qntd, itens_valor, id_lote, numero_lote, quantidade_atual, produto,
+                preco, id_produto, imagem, marca, categoria) {
+        this.#id_promocao = id_promocao;
+        this.#descricao = descricao;
+        this.#percentual_desconto = percentual_desconto;
+        this.#data_inicio = data_inicio;
+        this.#data_fim = data_fim;
+        this.#ativa = ativa;
+        this.#itens_qntd = itens_qntd;
+        this.#itens_valor = itens_valor;
+        this.#id_lote = id_lote;
+        this.#numero_lote = numero_lote;
+        this.#quantidade_atual = quantidade_atual;
+        this.#produto = produto;
+        this.#preco = preco;
+        this.#id_produto = id_produto;
+        this.#imagem = imagem;
+        this.#marca = marca;
+        this.#categoria = categoria;
+    }
 
     // ---------- GETTERS E SETTERS ----------
     get id_promocao() { return this.#id_promocao; }
@@ -63,6 +72,9 @@ class itens_promocao {
     get id_lote() { return this.#id_lote; }
     set id_lote(v) { this.#id_lote = v; }
 
+    get numero_lote() { return this.#numero_lote; }
+    set numero_lote(v) { this.#numero_lote = v; }
+
     get quantidade_atual() { return this.#quantidade_atual; }
     set quantidade_atual(v) { this.#quantidade_atual = v; }
 
@@ -75,20 +87,24 @@ class itens_promocao {
     get id_produto() { return this.#id_produto; }
     set id_produto(v) { this.#id_produto = v; }
 
-    get numero_lote() { return this.#numero_lote; }
-    set numero_lote(v) { this.#numero_lote = v; }
+    get imagem() { return this.#imagem; }
+    set imagem(v) { this.#imagem = v; }
+
+    get marca() { return this.#marca; }
+    set marca(v) { this.#marca = v; }
+
+    get categoria() { return this.#categoria; }
+    set categoria(v) { this.#categoria = v; }
 
     // ---------- BANCO ----------
 
-async recalcularValor(id_promocao, percentual) {
-    let sql = `UPDATE tb_item_promocao ip
-               JOIN tb_produto p ON p.id_produto = ip.id_produto
-               SET ip.itens_valor = p.preco - (p.preco * ? / 100)
-               WHERE ip.id_promocao = ?`;
-    let banco = new Database();
-    return await banco.ExecutaComando(sql, [percentual, id_promocao]);
-}
-
+    async recalcularValor(id_promocao, percentual) {
+        let sql = `UPDATE tb_item_promocao ip
+                   JOIN tb_produto p ON p.id_produto = ip.id_produto
+                   SET ip.itens_valor = p.preco - (p.preco * ? / 100)
+                   WHERE ip.id_promocao = ?`;
+        return await banco.ExecutaComandoNonQuery(sql, [percentual, id_promocao]);
+    }
 
     async gravar() {
         let sql = `insert into tb_item_promocao
@@ -103,11 +119,57 @@ async recalcularValor(id_promocao, percentual) {
             this.#id_produto
         ];
 
-        let result = await banco.ExecutaComandoNonQuery(sql, valores);
-
-        return result;
+        return await banco.ExecutaComandoNonQuery(sql, valores);
     }
 
+    async desativarVencidas() {
+        let sql = `update tb_promocao
+                   set ativa = 'N'
+                   where data_fim < curdate()
+                   and ativa = 'S'`;
+
+        return await banco.ExecutaComandoNonQuery(sql);
+    }
+
+    async loteJaTemPromocao(id_lote) {
+        let sql = `select count(*) as total
+                   from tb_item_promocao
+                   where id_lote = ?`;
+
+        let rows = await banco.ExecutaComando(sql, [id_lote]);
+        return rows[0]["total"] > 0;
+    }
+
+    // Monta a lista de objetos a partir das linhas do banco
+    #montarLista(rows) {
+        let lista = [];
+
+        for (let row of rows) {
+            lista.push(new itens_promocao(
+                row["id_promocao"],
+                row["descricao"],
+                row["percentual_desconto"],
+                row["data_inicio"],
+                row["data_fim"],
+                row["ativa"],
+                row["itens_qntd"],
+                row["itens_valor"],
+                row["id_lote"],
+                row["numero_lote"],
+                row["quantidade_atual"],
+                row["produto"],
+                row["precoNormal"],
+                row["id_produto"],
+                row["imagem"],
+                row["marca"],
+                row["categoria"]
+            ));
+        }
+
+        return lista;
+    }
+
+    // Tela de gestão
     async listarpromo() {
         let sql = `select
                 p.id_promocao,
@@ -127,50 +189,142 @@ async recalcularValor(id_promocao, percentual) {
             from tb_promocao p
             inner join tb_item_promocao i on p.id_promocao = i.id_promocao
             inner join tb_produto pr on pr.id_produto = i.id_produto
-            inner join tb_lote l on l.id_lote = i.id_lote`;
+            inner join tb_lote l on l.id_lote = i.id_lote
+            order by p.data_fim asc`;
 
         let rows = await banco.ExecutaComando(sql);
-        let lista = [];
-
-        for (let row of rows) {
-            lista.push(new itens_promocao(
-                row["id_promocao"],
-                row["descricao"],
-                row["percentual_desconto"],
-                row["data_inicio"],
-                row["data_fim"],
-                row["ativa"],
-                row["itens_qntd"],
-                row["itens_valor"],
-                row["id_lote"],
-                row["numero_lote"],
-                row["quantidade_atual"],
-                row["produto"],
-                row["precoNormal"],
-                row["id_produto"]
-            ));
-        }
-
-        return lista;
+        return this.#montarLista(rows);
     }
 
-   toJson() {
+    // Vitrine: só promoções ativas, no período e com estoque
+   async listarpromoVitrine() {
+    let sql = `
+        SELECT
+            p.id_promocao,
+            p.descricao AS descricao_promo,
+            p.percentual_desconto,
+            i.itens_qntd,
+            i.itens_valor,
+            i.id_lote,
+            l.quantidade_atual,
+            pr.id_produto,
+            pr.nome,
+            pr.descricao,
+            pr.preco,
+            pr.prd_imagem,
+            c.descricao AS categoria,
+            m.nome AS marca
+        FROM tb_promocao p
+        INNER JOIN tb_item_promocao i ON i.id_promocao = p.id_promocao
+        INNER JOIN tb_produto pr ON pr.id_produto = i.id_produto
+        INNER JOIN tb_lote l ON l.id_lote = i.id_lote
+        INNER JOIN tb_categoria c ON c.id_categoria = pr.id_categoria
+        INNER JOIN tb_marca m ON m.id_marca = pr.id_marca
+        WHERE p.ativa = 'S'
+          AND CURDATE() BETWEEN p.data_inicio AND p.data_fim
+          AND i.itens_qntd > 0
+          AND l.quantidade_atual > 0
+        ORDER BY pr.nome
+    `;
+
+    let rows = await banco.ExecutaComando(sql);
+
+    let lista = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        let imagemBase64 = "";
+
+        if (rows[i]["prd_imagem"] != null) {
+            imagemBase64 =
+                "data:image/png;base64," +
+                rows[i]["prd_imagem"].toString("base64");
+        }
+
+        lista.push({
+            id_promocao: rows[i]["id_promocao"],
+            id_lote: rows[i]["id_lote"],
+            id_produto: rows[i]["id_produto"],
+            nome: rows[i]["nome"],
+            descricao: rows[i]["descricao"],
+            preco: Number(rows[i]["preco"]),
+            itens_valor: Number(rows[i]["itens_valor"]),
+            percentual_desconto: Number(rows[i]["percentual_desconto"]),
+            imagem: imagemBase64,
+            qnt: Math.min(Number(rows[i]["itens_qntd"]), Number(rows[i]["quantidade_atual"])),
+            categoria: rows[i]["categoria"],
+            marca: rows[i]["marca"],
+        });
+    }
+
+    return lista;
+}
+async buscarPromoAtiva(id_produto) {
+    let sql = `SELECT p.id_promocao,
+                      i.id_lote,
+                      i.itens_valor,
+                      LEAST(i.itens_qntd, l.quantidade_atual) AS disponivel
+               FROM tb_promocao p
+               INNER JOIN tb_item_promocao i ON i.id_promocao = p.id_promocao
+               INNER JOIN tb_lote l ON l.id_lote = i.id_lote
+               WHERE i.id_produto = ?
+                 AND p.ativa = 'S'
+                 AND CURDATE() BETWEEN p.data_inicio AND p.data_fim
+                 AND l.data_validade >= CURDATE()
+               ORDER BY p.data_fim ASC
+               LIMIT 1`;
+
+    let rows = await banco.ExecutaComando(sql, [id_produto]);
+    if (rows.length === 0) return null;
+
     return {
-        id_promocao: this.#id_promocao,
-        descricao: this.#descricao,
-        percentual_desconto: this.#percentual_desconto,
-        data_inicio: this.#data_inicio,
-        data_fim: this.#data_fim,
-        ativa: this.#ativa,
-        itens_qntd: this.#itens_qntd,
-        itens_valor: this.#itens_valor,
-        id_lote: this.#id_lote,
-        quantidade_atual: this.#quantidade_atual,
-        produto: this.#produto,
-        preco: this.#preco,
-        id_produto: this.#id_produto
+        id_promocao: rows[0].id_promocao,
+        id_lote: rows[0].id_lote,
+        valor: Number(rows[0].itens_valor),
+        disponivel: Number(rows[0].disponivel || 0)
     };
 }
+
+async estoquePromo(id_promocao, id_produto) {
+    let sql = `SELECT LEAST(i.itens_qntd, l.quantidade_atual) AS disponivel
+               FROM tb_item_promocao i
+               INNER JOIN tb_lote l ON l.id_lote = i.id_lote
+               WHERE i.id_promocao = ?
+                 AND i.id_produto = ?
+                 AND l.data_validade >= CURDATE()`;
+
+    let rows = await banco.ExecutaComando(sql, [id_promocao, id_produto]);
+
+    if (rows.length === 0) return 0;
+    return Number(rows[0].disponivel || 0);
+}
+async baixarItensPromo(id_promocao, id_produto, quantidade) {
+    let sql = `UPDATE tb_item_promocao
+               SET itens_qntd = itens_qntd - ?
+               WHERE id_promocao = ? AND id_produto = ? AND itens_qntd >= ?`;
+
+    return await banco.ExecutaComandoNonQuery(sql, [quantidade, id_promocao, id_produto, quantidade]);
+}
+    toJson() {
+        return {
+            id_promocao: this.#id_promocao,
+            descricao: this.#descricao,
+            percentual_desconto: this.#percentual_desconto,
+            data_inicio: this.#data_inicio,
+            data_fim: this.#data_fim,
+            ativa: this.#ativa,
+            itens_qntd: this.#itens_qntd,
+            itens_valor: this.#itens_valor,
+            id_lote: this.#id_lote,
+            numero_lote: this.#numero_lote,
+            quantidade_atual: this.#quantidade_atual,
+            produto: this.#produto,
+            preco: this.#preco,
+            id_produto: this.#id_produto,
+            imagem: this.#imagem,
+            marca: this.#marca,
+            categoria: this.#categoria
+        };
+    }
 }
 
 module.exports = itens_promocao

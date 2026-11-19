@@ -1,5 +1,5 @@
 // JavaScript do Projeto Integrado
-// Carrinho no localStorage + backend (/produto/obter, /pedido/gravar)
+// Carrinho no localStorage + backend (/produtos/obter, /pedido/gravar)
 // Mantém: filtro, pesquisa, máscaras, CEP e conta do cliente.
 
 function chamarApi(url, dados, metodo = 'POST') {
@@ -31,7 +31,17 @@ function filtrarPorCategoria(categoria) {
 
   for (var j = 0; j < produtos.length; j++) {
     var catProduto = produtos[j].getAttribute('data-categoria');
-    produtos[j].style.display = (categoria == 'todos' || catProduto == categoria) ? 'block' : 'none';
+    var ehPromo = produtos[j].classList.contains('produto-promo');
+    var mostrar;
+
+    if (categoria == 'todos') {
+      // na aba "Todos" não mostra os cards de promoção (evita duplicar o produto)
+      mostrar = !ehPromo;
+    } else {
+      mostrar = (catProduto == categoria);
+    }
+
+    produtos[j].style.display = mostrar ? 'block' : 'none';
   }
 
   scrollToProducts();
@@ -44,7 +54,14 @@ function pesquisarProdutos() {
   for (var i = 0; i < produtos.length; i++) {
     var nome = produtos[i].getAttribute('data-name');
     if (nome == null) nome = produtos[i].querySelector('h3').innerHTML;
-    produtos[i].style.display = (nome.toLowerCase().indexOf(texto) >= 0) ? 'block' : 'none';
+    var ehPromo = produtos[i].classList.contains('produto-promo');
+
+    // sem texto digitado: volta ao padrão (promoções escondidas)
+    if (texto == '') {
+      produtos[i].style.display = ehPromo ? 'none' : 'block';
+    } else {
+      produtos[i].style.display = (nome.toLowerCase().indexOf(texto) >= 0) ? 'block' : 'none';
+    }
   }
 }
 
@@ -201,18 +218,31 @@ document.addEventListener('DOMContentLoaded', function () {
   atualizarContador();
   calcularValorTotal();
 
+  // esconde os cards de promoção na aba "Todos" (aparecem só na aba Promoção)
+  filtrarPorCategoriaSemScroll('todos');
+
   // lê todos os botões "adicionar ao carrinho" e liga o evento de click
   let btns = document.querySelectorAll('.addCarrinho');
   for (let i = 0; i < btns.length; i++) {
     btns[i].addEventListener('click', adicionarAoCarrinho);
   }
 
-let modalCarrinhoEl = document.getElementById('modalCarrinho');
-if (modalCarrinhoEl) modalCarrinhoEl.addEventListener('show.bs.modal', abrirCarrinho);
-
+  let modalCarrinhoEl = document.getElementById('modalCarrinho');
+  if (modalCarrinhoEl) modalCarrinhoEl.addEventListener('show.bs.modal', abrirCarrinho);
 
   let btnConfirmar = document.querySelector('#btnConfirmar');
   if (btnConfirmar) btnConfirmar.addEventListener('click', confirmarPedido);
+
+  // aplica o filtro inicial sem rolar a página
+  function filtrarPorCategoriaSemScroll(categoria) {
+    var produtos = document.querySelectorAll('#produtos-grid .produto');
+    for (var j = 0; j < produtos.length; j++) {
+      var catProduto = produtos[j].getAttribute('data-categoria');
+      var ehPromo = produtos[j].classList.contains('produto-promo');
+      var mostrar = (categoria == 'todos') ? !ehPromo : (catProduto == categoria);
+      produtos[j].style.display = mostrar ? 'block' : 'none';
+    }
+  }
 
   function confirmarPedido() {
     // envia o conteúdo do carrinho para o backend
@@ -240,7 +270,11 @@ if (modalCarrinhoEl) modalCarrinhoEl.addEventListener('show.bs.modal', abrirCarr
 
   function excluirProdutoCarrinho() {
     let produtoIdExcluir = this.dataset.produto;
-    listaCarrinho = listaCarrinho.filter(x => x.id != produtoIdExcluir);
+    let promoExcluir = this.dataset.promocao || '';
+
+    listaCarrinho = listaCarrinho.filter(x =>
+      !(x.id == produtoIdExcluir && String(x.id_promocao || '') == promoExcluir)
+    );
 
     localStorage.setItem('carrinho', JSON.stringify(listaCarrinho));
     atualizarContador();
@@ -262,57 +296,61 @@ if (modalCarrinhoEl) modalCarrinhoEl.addEventListener('show.bs.modal', abrirCarr
     if (contador) contador.innerHTML = listaCarrinho.length;
   }
 
- function abrirCarrinho() {
-  let corpoModal = document.getElementById('modalCarrinhoCorpo');
-  if (!corpoModal) { console.log('modalCarrinhoCorpo não encontrado'); return; }
+  function abrirCarrinho() {
+    let corpoModal = document.getElementById('modalCarrinhoCorpo');
+    if (!corpoModal) { console.log('modalCarrinhoCorpo não encontrado'); return; }
 
-  console.log('carrinho ao abrir:', listaCarrinho);
+    if (listaCarrinho.length == 0) {
+      corpoModal.innerHTML = 'Carrinho vazio!';
+      return;
+    }
 
-  if (listaCarrinho.length == 0) {
-    corpoModal.innerHTML = 'Carrinho vazio!';
-    return;
+    let linhas = '';
+    for (let i = 0; i < listaCarrinho.length; i++) {
+      let item = listaCarrinho[i];
+
+      // item em promoção: mostra o preço antigo riscado e o preço com desconto
+      let precoHtml = item.preco_original
+        ? `<small class="text-muted text-decoration-line-through">${Number(item.preco_original).toFixed(2)}</small><br>${Number(item.preco).toFixed(2)}`
+        : Number(item.preco).toFixed(2);
+      linhas += `<tr>
+                   <td><img width="50" src="${item.imagem}" /></td>
+                   <td>${item.nome}</td>
+                   <td>${precoHtml}</td>
+                   <td>${item.quantidade}</td>
+                   <td>${(item.quantidade * item.preco).toFixed(2)}</td>
+                   <td><button data-produto="${item.id}" data-promocao="${item.id_promocao || ''}" class="btn btn-danger excluirCarrinho"><i class="fas fa-trash"></i></button></td>
+                 </tr>`;
+    }
+
+    corpoModal.innerHTML = `<table class="table">
+                              <thead>
+                                <tr>
+                                  <th>Imagem</th><th>Nome</th><th>Valor Unitário</th>
+                                  <th>Quantidade</th><th>Valor Total</th><th>Ações</th>
+                                </tr>
+                              </thead>
+                              <tbody>${linhas}</tbody>
+                            </table>`;
+
+    let btnsExcluir = document.querySelectorAll('.excluirCarrinho');
+    for (let i = 0; i < btnsExcluir.length; i++) {
+      btnsExcluir[i].addEventListener('click', excluirProdutoCarrinho);
+    }
   }
-
-  let linhas = '';
-  for (let i = 0; i < listaCarrinho.length; i++) {
-    let item = listaCarrinho[i];
-    linhas += `<tr>
-                 <td><img width="50" src="${item.imagem}" /></td>
-                 <td>${item.nome}</td>
-                 <td>${Number(item.preco).toFixed(2)}</td>
-                 <td>${item.quantidade}</td>
-                 <td>${(item.quantidade * item.preco).toFixed(2)}</td>
-                 <td><button data-produto="${item.id}" class="btn btn-danger excluirCarrinho"><i class="fas fa-trash"></i></button></td>
-               </tr>`;
-  }
-
-  corpoModal.innerHTML = `<table class="table">
-                            <thead>
-                              <tr>
-                                <th>Imagem</th><th>Nome</th><th>Valor Unitário</th>
-                                <th>Quantidade</th><th>Valor Total</th><th>Ações</th>
-                              </tr>
-                            </thead>
-                            <tbody>${linhas}</tbody>
-                          </table>`;
-
-  let btnsExcluir = document.querySelectorAll('.excluirCarrinho');
-  for (let i = 0; i < btnsExcluir.length; i++) {
-    btnsExcluir[i].addEventListener('click', excluirProdutoCarrinho);
-  }
-}
 
   function adicionarAoCarrinho() {
     let produtoId = this.dataset.produto;
-    console.log(produtoId)
+    let idPromo = this.dataset.promocao || null;
+    let precoPromo = this.dataset.precoPromo || null; // vem de data-preco-promo
     let that = this;
+console.log('dataset:', this.dataset);
+console.log('precoPromo:', this.dataset.precoPromo);
     if (produtoId) {
-        console.log('clicou, id =', produtoId, '| itens no carrinho =', listaCarrinho.length);
-
       let achou = false;
       for (let i = 0; i < listaCarrinho.length; i++) {
-        if (produtoId == listaCarrinho[i].id) {
-         
+        let mesmaPromo = (listaCarrinho[i].id_promocao || null) == idPromo;
+        if (produtoId == listaCarrinho[i].id && mesmaPromo) {
           listaCarrinho[i].quantidade += 1;
           achou = true;
         }
@@ -327,6 +365,14 @@ if (modalCarrinhoEl) modalCarrinhoEl.addEventListener('show.bs.modal', abrirCarr
           })
           .then(function (corpo) {
             corpo.produto.quantidade = 1;
+            console.log('item final:', corpo.produto);
+            // se veio de um card de promoção, usa o preço com desconto
+            if (precoPromo) {
+              corpo.produto.preco_original = corpo.produto.preco;
+              corpo.produto.preco = Number(precoPromo);
+              corpo.produto.id_promocao = idPromo;
+            }
+
             listaCarrinho.push(corpo.produto);
           });
       }
@@ -336,7 +382,7 @@ if (modalCarrinhoEl) modalCarrinhoEl.addEventListener('show.bs.modal', abrirCarr
           localStorage.setItem('carrinho', JSON.stringify(listaCarrinho));
           that.innerHTML = "<i class='fas fa-check'></i> Adicionado!";
           setTimeout(function () {
-            that.innerHTML = "<i class='bi-cart-fill me-1'></i> Adicionar ao carrinho";
+            that.innerHTML = "<i class='fa-solid fa-cart-plus me-1'></i> Adicionar ao carrinho";
           }, 3000);
 
           atualizarContador();

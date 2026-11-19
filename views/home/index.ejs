@@ -128,10 +128,54 @@
     <button class="filtro-btn" data-categoria="verduras" onclick="filtrarPorCategoria('verduras')">
       <i class="fas fa-leaf"></i> Verduras
     </button>
+    <button class="filtro-btn" data-categoria="promocao" onclick="filtrarPorCategoria('promocao')">
+  <i class="fas fa-percent"></i> Promoção
+</button>
   </div>
 
      <div class="grid" id="produtos-grid">
     <!-- telas de produtos -->
+     <% if (typeof listarPromo !== 'undefined' && listarPromo && listarPromo.length > 0) { %>
+  <% for (let i = 0; i < listarPromo.length; i++) { %>
+    <div class="produto produto-promo"
+         data-name="<%= listarPromo[i].produto %>"
+         data-categoria="promocao"
+         data-preco="<%= Number(listarPromo[i].itens_valor).toFixed(2) %>"
+         data-descricao="<%= listarPromo[i].descricao || 'Produto em promoção.' %>"
+         data-estoque="<%= listarPromo[i].itens_qntd %>"
+         onclick="abrirProdutoDetalhe(event, this)"
+         role="button">
+
+      <span class="badge text-bg-danger position-absolute m-2">
+        -<%= Number(listarPromo[i].percentual_desconto).toFixed(0) %>%
+      </span>
+
+      <img src="<%= listarPromo[i].imagem ? listarPromo[i].imagem : '/imagens-produtos/produto-sem-imagem.webp' %>"
+           alt="<%= listarPromo[i].produto %>">
+
+      <span class="badge text-bg-light"><%= listarPromo[i].categoria || '' %></span>
+      <h3><%= listarPromo[i].produto %></h3>
+      <p class="text-muted small mb-1"><%= listarPromo[i].marca || '' %></p>
+
+      <p class="mb-1">
+        <small class="text-muted text-decoration-line-through">
+          R$ <%= Number(listarPromo[i].preco).toFixed(2).replace('.', ',') %>
+        </small>
+      </p>
+      <p class="text-success fw-bold">
+        R$ <%= Number(listarPromo[i].itens_valor).toFixed(2).replace('.', ',') %>
+      </p>
+
+     <button type="button" class="btn btn-success w-100 mt-2 addCarrinho"
+        data-produto="<%= listarPromo[i].id_produto %>"
+        data-promocao="<%= listarPromo[i].id_promocao %>"
+        data-preco-promo="<%= Number(listarPromo[i].itens_valor).toFixed(2) %>">
+  <i class="fa-solid fa-cart-plus me-1"></i> Adicionar ao carrinho
+</button>
+    </div>
+  <% } %>
+<% } %>
+
     <%# "lista" vem do controller: res.render('home/index', { lista }) %>
     <% if (lista && lista.length > 0) { %>
       <% for (let i = 0; i < lista.length; i++) { %>
